@@ -1,0 +1,31 @@
+
+syntax = "proto3";
+
+package gateway;
+
+// 옵션추가 
+option go_package = "service-gateway/proto;proto";
+
+// rpc 로 gRPC 함수 인터페이스 정의 
+service GatewayService {
+    rpc SaveSession(SessionRequest) returns (GenericResponse);
+    rpc GetSession(SessionRequest) returns (SessionResponse);
+}
+
+// 구조체 역할
+// 1,2 = 필드 순서 및 식별자 유니크
+message SessionRequest {
+    string key = 1;
+    string value = 2;
+}
+
+message SessionResponse {
+    string value = 1;
+}
+
+message GenericResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+

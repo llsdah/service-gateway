@@ -1,0 +1,18 @@
+proto 설치 위해 
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# 터미널에서 proto 디렉토리에 위치하고
+protoc --go_out=. --go-grpc_out=. gateway.proto
+
++ protoc 설치 및 환경변수 등록
+root 디렉토리에서 아래 명령어 수행
+protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. proto/gateway.proto
+
+
+다음 질문
+
+Go로 작성 중이고, gRPC 서버는 proto까지 완성한 상태야.
+이제 클라이언트에서 Redis 세션을 저장하는 요청을 보내고 싶은데,
+pb.NewGatewayServiceClient(...) 호출 예시랑 요청 메시지 구성은 어떻게 하면 좋을까?
+proto에는 SaveSession(SessionRequest) rpc가 있어.

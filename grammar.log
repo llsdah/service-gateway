@@ -1,0 +1,93 @@
+go 언어 간단한 문법
+
+* go 특장
+- 간결 및 표준라이브러리
+- 병행성 goroutine
+- 동시성 channel 
+
+* 변수 선언
+var name string = "lee" // 명시적타입선언
+age := 29 // 타입추론 ( java에서의 var 비슷 ) 
+
+* 상수 선언
+const Pi = 3.14 // 타입이 자동으로 결정됨 = final
+
+
+* 조건문
+-  타입변환 필요 없다 
+if age >= 29 {
+
+} else {
+
+}
+
+* 반복문
+for i := 1; i <= 5; i++ {
+    // 1 - 5 까지 출력
+}
+
+
+for i <= 5 {
+    i++
+}
+
+* 함수 
+// 함수 정의타입 먼저, 반환타입 나중
+func greet (name string) string {
+    return "Hello," + name
+}
+
+func main() {
+message := greet("hi")
+}
+
+* 구조체 Struct 
+- 클래스 대신 사용
+- 필드 정의 및 타입 명시 필요 
+- 메소드 추가 가능, 조합을 통한 객체 지향 구현 
+type Person struct {
+    Name string
+    Age int
+}
+
+func main() {
+    p := Person{Name: "le", Age: 29 
+}
+
+* 메소드 
+- 구조체 타입에 연결된 함수를 의미 
+- func (p Person) 의 p 는 구조체 인스턴스 
+type Person struct {
+    Name string
+    Age int
+}
+
+func (p Person) greet() string {
+    return "Hello," + p.Name
+}
+
+func main() {
+    p := Person{Name: "Lyndon", Age: 29}
+    p.greet() // 메소드 호출
+}
+
+
+* 인터페이스 
+- 인터페이스 구현은 암묵적이다
+=> Greeter 인터페이스의 메서드인 Greet() 만 있으면, Person은 그 인터페이스를 구현한 것으로 간주함
+type Greeter interface {
+    Greet() string
+}
+
+type Person struct {
+Name string
+}
+
+func (p Person) Greet() string {
+    return "Hello" + p.Name
+}
+
+func main() {
+    var g Greeter = Person{Name: "hi"}
+    g.Greet()
+}

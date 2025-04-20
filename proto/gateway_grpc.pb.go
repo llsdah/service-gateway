@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.30.2
-// source: proto/gateway.proto
+// source: gateway.proto
 
 package proto
 
@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	GatewayService_SaveSession_FullMethodName = "/gateway.GatewayService/SaveSession"
 	GatewayService_GetSession_FullMethodName  = "/gateway.GatewayService/GetSession"
+	GatewayService_SayHello_FullMethodName    = "/gateway.GatewayService/SayHello"
 )
 
 // GatewayServiceClient is the client API for GatewayService service.
@@ -31,6 +32,7 @@ const (
 type GatewayServiceClient interface {
 	SaveSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	GetSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error)
+	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 }
 
 type gatewayServiceClient struct {
@@ -61,6 +63,16 @@ func (c *gatewayServiceClient) GetSession(ctx context.Context, in *SessionReques
 	return out, nil
 }
 
+func (c *gatewayServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HelloResponse)
+	err := c.cc.Invoke(ctx, GatewayService_SayHello_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GatewayServiceServer is the server API for GatewayService service.
 // All implementations must embed UnimplementedGatewayServiceServer
 // for forward compatibility.
@@ -69,6 +81,7 @@ func (c *gatewayServiceClient) GetSession(ctx context.Context, in *SessionReques
 type GatewayServiceServer interface {
 	SaveSession(context.Context, *SessionRequest) (*GenericResponse, error)
 	GetSession(context.Context, *SessionRequest) (*SessionResponse, error)
+	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
 
@@ -84,6 +97,9 @@ func (UnimplementedGatewayServiceServer) SaveSession(context.Context, *SessionRe
 }
 func (UnimplementedGatewayServiceServer) GetSession(context.Context, *SessionRequest) (*SessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSession not implemented")
+}
+func (UnimplementedGatewayServiceServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
 func (UnimplementedGatewayServiceServer) mustEmbedUnimplementedGatewayServiceServer() {}
 func (UnimplementedGatewayServiceServer) testEmbeddedByValue()                        {}
@@ -142,6 +158,24 @@ func _GatewayService_GetSession_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewayService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HelloRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).SayHello(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_SayHello_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).SayHello(ctx, req.(*HelloRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GatewayService_ServiceDesc is the grpc.ServiceDesc for GatewayService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -157,7 +191,11 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetSession",
 			Handler:    _GatewayService_GetSession_Handler,
 		},
+		{
+			MethodName: "SayHello",
+			Handler:    _GatewayService_SayHello_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/gateway.proto",
+	Metadata: "gateway.proto",
 }

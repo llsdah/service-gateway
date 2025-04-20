@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v6.30.2
-// source: proto/gateway.proto
+// source: gateway.proto
 
 package proto
 
@@ -33,7 +33,7 @@ type SessionRequest struct {
 
 func (x *SessionRequest) Reset() {
 	*x = SessionRequest{}
-	mi := &file_proto_gateway_proto_msgTypes[0]
+	mi := &file_gateway_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45,7 +45,7 @@ func (x *SessionRequest) String() string {
 func (*SessionRequest) ProtoMessage() {}
 
 func (x *SessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_gateway_proto_msgTypes[0]
+	mi := &file_gateway_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +58,7 @@ func (x *SessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionRequest.ProtoReflect.Descriptor instead.
 func (*SessionRequest) Descriptor() ([]byte, []int) {
-	return file_proto_gateway_proto_rawDescGZIP(), []int{0}
+	return file_gateway_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *SessionRequest) GetKey() string {
@@ -84,7 +84,7 @@ type SessionResponse struct {
 
 func (x *SessionResponse) Reset() {
 	*x = SessionResponse{}
-	mi := &file_proto_gateway_proto_msgTypes[1]
+	mi := &file_gateway_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -96,7 +96,7 @@ func (x *SessionResponse) String() string {
 func (*SessionResponse) ProtoMessage() {}
 
 func (x *SessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_gateway_proto_msgTypes[1]
+	mi := &file_gateway_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -109,7 +109,7 @@ func (x *SessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionResponse.ProtoReflect.Descriptor instead.
 func (*SessionResponse) Descriptor() ([]byte, []int) {
-	return file_proto_gateway_proto_rawDescGZIP(), []int{1}
+	return file_gateway_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SessionResponse) GetValue() string {
@@ -129,7 +129,7 @@ type GenericResponse struct {
 
 func (x *GenericResponse) Reset() {
 	*x = GenericResponse{}
-	mi := &file_proto_gateway_proto_msgTypes[2]
+	mi := &file_gateway_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -141,7 +141,7 @@ func (x *GenericResponse) String() string {
 func (*GenericResponse) ProtoMessage() {}
 
 func (x *GenericResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_gateway_proto_msgTypes[2]
+	mi := &file_gateway_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -154,7 +154,7 @@ func (x *GenericResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenericResponse.ProtoReflect.Descriptor instead.
 func (*GenericResponse) Descriptor() ([]byte, []int) {
-	return file_proto_gateway_proto_rawDescGZIP(), []int{2}
+	return file_gateway_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GenericResponse) GetSuccess() bool {
@@ -171,11 +171,99 @@ func (x *GenericResponse) GetMessage() string {
 	return ""
 }
 
-var File_proto_gateway_proto protoreflect.FileDescriptor
+type HelloRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_proto_gateway_proto_rawDesc = "" +
+func (x *HelloRequest) Reset() {
+	*x = HelloRequest{}
+	mi := &file_gateway_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HelloRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HelloRequest) ProtoMessage() {}
+
+func (x *HelloRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HelloRequest.ProtoReflect.Descriptor instead.
+func (*HelloRequest) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *HelloRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type HelloResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HelloResponse) Reset() {
+	*x = HelloResponse{}
+	mi := &file_gateway_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HelloResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HelloResponse) ProtoMessage() {}
+
+func (x *HelloResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HelloResponse.ProtoReflect.Descriptor instead.
+func (*HelloResponse) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *HelloResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+var File_gateway_proto protoreflect.FileDescriptor
+
+const file_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/gateway.proto\x12\agateway\"8\n" +
+	"\rgateway.proto\x12\agateway\"8\n" +
 	"\x0eSessionRequest\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\"'\n" +
@@ -183,62 +271,72 @@ const file_proto_gateway_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\tR\x05value\"E\n" +
 	"\x0fGenericResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\x93\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\"\n" +
+	"\fHelloRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\")\n" +
+	"\rHelloResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xce\x01\n" +
 	"\x0eGatewayService\x12@\n" +
 	"\vSaveSession\x12\x17.gateway.SessionRequest\x1a\x18.gateway.GenericResponse\x12?\n" +
 	"\n" +
-	"GetSession\x12\x17.gateway.SessionRequest\x1a\x18.gateway.SessionResponseB\x1dZ\x1bservice-gateway/proto;protob\x06proto3"
+	"GetSession\x12\x17.gateway.SessionRequest\x1a\x18.gateway.SessionResponse\x129\n" +
+	"\bSayHello\x12\x15.gateway.HelloRequest\x1a\x16.gateway.HelloResponseB\n" +
+	"Z\b./;protob\x06proto3"
 
 var (
-	file_proto_gateway_proto_rawDescOnce sync.Once
-	file_proto_gateway_proto_rawDescData []byte
+	file_gateway_proto_rawDescOnce sync.Once
+	file_gateway_proto_rawDescData []byte
 )
 
-func file_proto_gateway_proto_rawDescGZIP() []byte {
-	file_proto_gateway_proto_rawDescOnce.Do(func() {
-		file_proto_gateway_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_gateway_proto_rawDesc), len(file_proto_gateway_proto_rawDesc)))
+func file_gateway_proto_rawDescGZIP() []byte {
+	file_gateway_proto_rawDescOnce.Do(func() {
+		file_gateway_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)))
 	})
-	return file_proto_gateway_proto_rawDescData
+	return file_gateway_proto_rawDescData
 }
 
-var file_proto_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_proto_gateway_proto_goTypes = []any{
+var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_gateway_proto_goTypes = []any{
 	(*SessionRequest)(nil),  // 0: gateway.SessionRequest
 	(*SessionResponse)(nil), // 1: gateway.SessionResponse
 	(*GenericResponse)(nil), // 2: gateway.GenericResponse
+	(*HelloRequest)(nil),    // 3: gateway.HelloRequest
+	(*HelloResponse)(nil),   // 4: gateway.HelloResponse
 }
-var file_proto_gateway_proto_depIdxs = []int32{
+var file_gateway_proto_depIdxs = []int32{
 	0, // 0: gateway.GatewayService.SaveSession:input_type -> gateway.SessionRequest
 	0, // 1: gateway.GatewayService.GetSession:input_type -> gateway.SessionRequest
-	2, // 2: gateway.GatewayService.SaveSession:output_type -> gateway.GenericResponse
-	1, // 3: gateway.GatewayService.GetSession:output_type -> gateway.SessionResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	3, // 2: gateway.GatewayService.SayHello:input_type -> gateway.HelloRequest
+	2, // 3: gateway.GatewayService.SaveSession:output_type -> gateway.GenericResponse
+	1, // 4: gateway.GatewayService.GetSession:output_type -> gateway.SessionResponse
+	4, // 5: gateway.GatewayService.SayHello:output_type -> gateway.HelloResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_proto_gateway_proto_init() }
-func file_proto_gateway_proto_init() {
-	if File_proto_gateway_proto != nil {
+func init() { file_gateway_proto_init() }
+func file_gateway_proto_init() {
+	if File_gateway_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_gateway_proto_rawDesc), len(file_proto_gateway_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_gateway_proto_goTypes,
-		DependencyIndexes: file_proto_gateway_proto_depIdxs,
-		MessageInfos:      file_proto_gateway_proto_msgTypes,
+		GoTypes:           file_gateway_proto_goTypes,
+		DependencyIndexes: file_gateway_proto_depIdxs,
+		MessageInfos:      file_gateway_proto_msgTypes,
 	}.Build()
-	File_proto_gateway_proto = out.File
-	file_proto_gateway_proto_goTypes = nil
-	file_proto_gateway_proto_depIdxs = nil
+	File_gateway_proto = out.File
+	file_gateway_proto_goTypes = nil
+	file_gateway_proto_depIdxs = nil
 }

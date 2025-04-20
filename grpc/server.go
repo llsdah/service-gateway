@@ -8,6 +8,7 @@ import (
 	"service-gateway/redis"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 // grpc 서비스의 인터페이시 내장 구조체 생성
@@ -20,6 +21,9 @@ func StartServer(lis net.Listener) {
 
 	// gRPC gatewayServer 서비스 등록 부분
 	pb.RegisterGatewayServiceServer(s, &GatewayServer{})
+
+	// postman test를 위한 로직
+	reflection.Register(s)
 
 	s.Serve(lis)
 }
@@ -36,4 +40,23 @@ func (s *GatewayServer) SaveSession(ctx context.Context, req *pb.SessionRequest)
 		return &pb.GenericResponse{Success: false, Message: err.Error()}, nil
 	}
 	return &pb.GenericResponse{Success: true, Message: "Saved"}, nil
+}
+
+func (s *GatewayServer) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloResponse, error) {
+	name := req.GetName()
+	if name == "" {
+		name = "World"
+	}
+
+	message := "Hello, " + name + "!"
+	return &pb.HelloResponse{Message: message}, nil
+}
+
+// 세션 조회
+func (s *GatewayServer) GetSession(ctx context.Context, req *pb.SessionRequest) (*pb.SessionResponse, error) {
+	value, err := redis.GetSession(ctx, req.Key)
+	if err != nil {
+		return &pb.SessionResponse{Value: ""}, err
+	}
+	return &pb.SessionResponse{Value: value}, nil
 }

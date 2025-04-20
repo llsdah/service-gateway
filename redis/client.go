@@ -8,7 +8,7 @@ import (
 
 // var = 전역변수
 var rdb *redis.Client = redis.NewClient(&redis.Options{
-	Addr: "localhost:6379",
+	Addr: "127.0.0.1:6379",
 })
 
 // set key-value 저장, 0 TTL

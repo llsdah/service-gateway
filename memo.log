@@ -16,3 +16,13 @@ Go로 작성 중이고, gRPC 서버는 proto까지 완성한 상태야.
 이제 클라이언트에서 Redis 세션을 저장하는 요청을 보내고 싶은데,
 pb.NewGatewayServiceClient(...) 호출 예시랑 요청 메시지 구성은 어떻게 하면 좋을까?
 proto에는 SaveSession(SessionRequest) rpc가 있어.
+
+
+4/21
+레디스 적재, 조회 0 
+카프카 적재 0, 파일로그 읽어서 적재 및 백업 
+
+카프카 적재 방식 고민, 파일 사용? 혹은 호출 
+
+레디스 설정으로 뺴서 연결 필요 
+

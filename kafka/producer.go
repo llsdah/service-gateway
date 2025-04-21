@@ -15,7 +15,7 @@ var writer = &kafka.Writer{
 	Balancer: &kafka.LeastBytes{},         // 로드밸런싱 방식
 }
 
-// 메시지 만들고
+// 고정 토픽
 func ProduceMessage(ctx context.Context, key, value string) error {
 	msg := kafka.Message{
 		Key:   []byte(key),
@@ -28,4 +28,26 @@ func ProduceMessage(ctx context.Context, key, value string) error {
 	}
 	// 에러시 로그 찍고 레어 리턴
 	return err
+}
+
+// 동적 토픽
+func ProduceToTopicWithBrokers(ctx context.Context, brokers []string, topic, key, value string) error {
+	writer := kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  brokers,
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+	})
+	defer writer.Close()
+
+	msg := kafka.Message{
+		Key:   []byte(key),
+		Value: []byte(value),
+	}
+
+	err := writer.WriteMessages(ctx, msg)
+	if err != nil {
+		log.Printf("kafka produce error (dynamic topic): %v", err)
+	}
+	return err
+
 }

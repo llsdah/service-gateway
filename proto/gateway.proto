@@ -8,12 +8,22 @@ option go_package = "./;proto";
 
 // rpc 로 gRPC 함수 인터페이스 정의 
 service GatewayService {
+    rpc SayHello(HelloRequest) returns (HelloResponse);
     rpc SaveSession(SessionRequest) returns (GenericResponse);
     rpc GetSession(SessionRequest) returns (SessionResponse);
-    rpc SayHello(HelloRequest) returns (HelloResponse);
+
+    rpc SendFileToKafka (SendFileRequest) returns (SendFileResponse);
 }
 
 // 구조체 역할
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloResponse {
+    string message = 1;
+}
+
 // 1,2 = 필드 순서 및 식별자 유니크
 message SessionRequest {
     string key = 1;
@@ -29,12 +39,17 @@ message GenericResponse {
     string message = 2;
 }
 
-message HelloRequest {
-    string name = 1;
+message SendFileRequest {
+    string topic = 1;
+    string input_path = 2;
+    string output_path = 3;
+    repeated string brokers = 4; // ["localhost:9092","kafka1:9093"]
 }
 
-message HelloResponse {
-    string message = 1;
+message SendFileResponse {
+    bool success = 1;
+    string message = 2;
+    int32 lines_sent = 3; // 송신된 라인 수 
 }
 
 

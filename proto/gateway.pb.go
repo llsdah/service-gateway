@@ -22,6 +22,94 @@ const (
 )
 
 // 구조체 역할
+type HelloRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HelloRequest) Reset() {
+	*x = HelloRequest{}
+	mi := &file_gateway_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HelloRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HelloRequest) ProtoMessage() {}
+
+func (x *HelloRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HelloRequest.ProtoReflect.Descriptor instead.
+func (*HelloRequest) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *HelloRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type HelloResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HelloResponse) Reset() {
+	*x = HelloResponse{}
+	mi := &file_gateway_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HelloResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HelloResponse) ProtoMessage() {}
+
+func (x *HelloResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HelloResponse.ProtoReflect.Descriptor instead.
+func (*HelloResponse) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *HelloResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 // 1,2 = 필드 순서 및 식별자 유니크
 type SessionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -33,7 +121,7 @@ type SessionRequest struct {
 
 func (x *SessionRequest) Reset() {
 	*x = SessionRequest{}
-	mi := &file_gateway_proto_msgTypes[0]
+	mi := &file_gateway_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45,7 +133,7 @@ func (x *SessionRequest) String() string {
 func (*SessionRequest) ProtoMessage() {}
 
 func (x *SessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[0]
+	mi := &file_gateway_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +146,7 @@ func (x *SessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionRequest.ProtoReflect.Descriptor instead.
 func (*SessionRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{0}
+	return file_gateway_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *SessionRequest) GetKey() string {
@@ -84,7 +172,7 @@ type SessionResponse struct {
 
 func (x *SessionResponse) Reset() {
 	*x = SessionResponse{}
-	mi := &file_gateway_proto_msgTypes[1]
+	mi := &file_gateway_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -96,7 +184,7 @@ func (x *SessionResponse) String() string {
 func (*SessionResponse) ProtoMessage() {}
 
 func (x *SessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[1]
+	mi := &file_gateway_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -109,7 +197,7 @@ func (x *SessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionResponse.ProtoReflect.Descriptor instead.
 func (*SessionResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{1}
+	return file_gateway_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *SessionResponse) GetValue() string {
@@ -129,7 +217,7 @@ type GenericResponse struct {
 
 func (x *GenericResponse) Reset() {
 	*x = GenericResponse{}
-	mi := &file_gateway_proto_msgTypes[2]
+	mi := &file_gateway_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -141,7 +229,7 @@ func (x *GenericResponse) String() string {
 func (*GenericResponse) ProtoMessage() {}
 
 func (x *GenericResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[2]
+	mi := &file_gateway_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -154,7 +242,7 @@ func (x *GenericResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenericResponse.ProtoReflect.Descriptor instead.
 func (*GenericResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{2}
+	return file_gateway_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GenericResponse) GetSuccess() bool {
@@ -171,28 +259,31 @@ func (x *GenericResponse) GetMessage() string {
 	return ""
 }
 
-type HelloRequest struct {
+type SendFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	InputPath     string                 `protobuf:"bytes,2,opt,name=input_path,json=inputPath,proto3" json:"input_path,omitempty"`
+	OutputPath    string                 `protobuf:"bytes,3,opt,name=output_path,json=outputPath,proto3" json:"output_path,omitempty"`
+	Brokers       []string               `protobuf:"bytes,4,rep,name=brokers,proto3" json:"brokers,omitempty"` // ["localhost:9092","kafka1:9093"]
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HelloRequest) Reset() {
-	*x = HelloRequest{}
-	mi := &file_gateway_proto_msgTypes[3]
+func (x *SendFileRequest) Reset() {
+	*x = SendFileRequest{}
+	mi := &file_gateway_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HelloRequest) String() string {
+func (x *SendFileRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HelloRequest) ProtoMessage() {}
+func (*SendFileRequest) ProtoMessage() {}
 
-func (x *HelloRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[3]
+func (x *SendFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -203,40 +294,62 @@ func (x *HelloRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HelloRequest.ProtoReflect.Descriptor instead.
-func (*HelloRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use SendFileRequest.ProtoReflect.Descriptor instead.
+func (*SendFileRequest) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *HelloRequest) GetName() string {
+func (x *SendFileRequest) GetTopic() string {
 	if x != nil {
-		return x.Name
+		return x.Topic
 	}
 	return ""
 }
 
-type HelloResponse struct {
+func (x *SendFileRequest) GetInputPath() string {
+	if x != nil {
+		return x.InputPath
+	}
+	return ""
+}
+
+func (x *SendFileRequest) GetOutputPath() string {
+	if x != nil {
+		return x.OutputPath
+	}
+	return ""
+}
+
+func (x *SendFileRequest) GetBrokers() []string {
+	if x != nil {
+		return x.Brokers
+	}
+	return nil
+}
+
+type SendFileResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HelloResponse) Reset() {
-	*x = HelloResponse{}
-	mi := &file_gateway_proto_msgTypes[4]
+func (x *SendFileResponse) Reset() {
+	*x = SendFileResponse{}
+	mi := &file_gateway_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HelloResponse) String() string {
+func (x *SendFileResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HelloResponse) ProtoMessage() {}
+func (*SendFileResponse) ProtoMessage() {}
 
-func (x *HelloResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[4]
+func (x *SendFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,12 +360,19 @@ func (x *HelloResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HelloResponse.ProtoReflect.Descriptor instead.
-func (*HelloResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{4}
+// Deprecated: Use SendFileResponse.ProtoReflect.Descriptor instead.
+func (*SendFileResponse) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *HelloResponse) GetMessage() string {
+func (x *SendFileResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *SendFileResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -263,7 +383,11 @@ var File_gateway_proto protoreflect.FileDescriptor
 
 const file_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\rgateway.proto\x12\agateway\"8\n" +
+	"\rgateway.proto\x12\agateway\"\"\n" +
+	"\fHelloRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\")\n" +
+	"\rHelloResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"8\n" +
 	"\x0eSessionRequest\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\"'\n" +
@@ -271,16 +395,23 @@ const file_gateway_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\tR\x05value\"E\n" +
 	"\x0fGenericResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\"\n" +
-	"\fHelloRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\")\n" +
-	"\rHelloResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\xce\x01\n" +
-	"\x0eGatewayService\x12@\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x81\x01\n" +
+	"\x0fSendFileRequest\x12\x14\n" +
+	"\x05topic\x18\x01 \x01(\tR\x05topic\x12\x1d\n" +
+	"\n" +
+	"input_path\x18\x02 \x01(\tR\tinputPath\x12\x1f\n" +
+	"\voutput_path\x18\x03 \x01(\tR\n" +
+	"outputPath\x12\x18\n" +
+	"\abrokers\x18\x04 \x03(\tR\abrokers\"F\n" +
+	"\x10SendFileResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\x96\x02\n" +
+	"\x0eGatewayService\x129\n" +
+	"\bSayHello\x12\x15.gateway.HelloRequest\x1a\x16.gateway.HelloResponse\x12@\n" +
 	"\vSaveSession\x12\x17.gateway.SessionRequest\x1a\x18.gateway.GenericResponse\x12?\n" +
 	"\n" +
-	"GetSession\x12\x17.gateway.SessionRequest\x1a\x18.gateway.SessionResponse\x129\n" +
-	"\bSayHello\x12\x15.gateway.HelloRequest\x1a\x16.gateway.HelloResponseB\n" +
+	"GetSession\x12\x17.gateway.SessionRequest\x1a\x18.gateway.SessionResponse\x12F\n" +
+	"\x0fSendFileToKafka\x12\x18.gateway.SendFileRequest\x1a\x19.gateway.SendFileResponseB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
@@ -295,23 +426,27 @@ func file_gateway_proto_rawDescGZIP() []byte {
 	return file_gateway_proto_rawDescData
 }
 
-var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_gateway_proto_goTypes = []any{
-	(*SessionRequest)(nil),  // 0: gateway.SessionRequest
-	(*SessionResponse)(nil), // 1: gateway.SessionResponse
-	(*GenericResponse)(nil), // 2: gateway.GenericResponse
-	(*HelloRequest)(nil),    // 3: gateway.HelloRequest
-	(*HelloResponse)(nil),   // 4: gateway.HelloResponse
+	(*HelloRequest)(nil),     // 0: gateway.HelloRequest
+	(*HelloResponse)(nil),    // 1: gateway.HelloResponse
+	(*SessionRequest)(nil),   // 2: gateway.SessionRequest
+	(*SessionResponse)(nil),  // 3: gateway.SessionResponse
+	(*GenericResponse)(nil),  // 4: gateway.GenericResponse
+	(*SendFileRequest)(nil),  // 5: gateway.SendFileRequest
+	(*SendFileResponse)(nil), // 6: gateway.SendFileResponse
 }
 var file_gateway_proto_depIdxs = []int32{
-	0, // 0: gateway.GatewayService.SaveSession:input_type -> gateway.SessionRequest
-	0, // 1: gateway.GatewayService.GetSession:input_type -> gateway.SessionRequest
-	3, // 2: gateway.GatewayService.SayHello:input_type -> gateway.HelloRequest
-	2, // 3: gateway.GatewayService.SaveSession:output_type -> gateway.GenericResponse
-	1, // 4: gateway.GatewayService.GetSession:output_type -> gateway.SessionResponse
-	4, // 5: gateway.GatewayService.SayHello:output_type -> gateway.HelloResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	0, // 0: gateway.GatewayService.SayHello:input_type -> gateway.HelloRequest
+	2, // 1: gateway.GatewayService.SaveSession:input_type -> gateway.SessionRequest
+	2, // 2: gateway.GatewayService.GetSession:input_type -> gateway.SessionRequest
+	5, // 3: gateway.GatewayService.SendFileToKafka:input_type -> gateway.SendFileRequest
+	1, // 4: gateway.GatewayService.SayHello:output_type -> gateway.HelloResponse
+	4, // 5: gateway.GatewayService.SaveSession:output_type -> gateway.GenericResponse
+	3, // 6: gateway.GatewayService.GetSession:output_type -> gateway.SessionResponse
+	6, // 7: gateway.GatewayService.SendFileToKafka:output_type -> gateway.SendFileResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -328,7 +463,7 @@ func file_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

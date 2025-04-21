@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GatewayService_SaveSession_FullMethodName = "/gateway.GatewayService/SaveSession"
-	GatewayService_GetSession_FullMethodName  = "/gateway.GatewayService/GetSession"
-	GatewayService_SayHello_FullMethodName    = "/gateway.GatewayService/SayHello"
+	GatewayService_SayHello_FullMethodName        = "/gateway.GatewayService/SayHello"
+	GatewayService_SaveSession_FullMethodName     = "/gateway.GatewayService/SaveSession"
+	GatewayService_GetSession_FullMethodName      = "/gateway.GatewayService/GetSession"
+	GatewayService_SendFileToKafka_FullMethodName = "/gateway.GatewayService/SendFileToKafka"
 )
 
 // GatewayServiceClient is the client API for GatewayService service.
@@ -30,9 +31,10 @@ const (
 //
 // rpc 로 gRPC 함수 인터페이스 정의
 type GatewayServiceClient interface {
+	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 	SaveSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	GetSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error)
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
+	SendFileToKafka(ctx context.Context, in *SendFileRequest, opts ...grpc.CallOption) (*SendFileResponse, error)
 }
 
 type gatewayServiceClient struct {
@@ -41,6 +43,16 @@ type gatewayServiceClient struct {
 
 func NewGatewayServiceClient(cc grpc.ClientConnInterface) GatewayServiceClient {
 	return &gatewayServiceClient{cc}
+}
+
+func (c *gatewayServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HelloResponse)
+	err := c.cc.Invoke(ctx, GatewayService_SayHello_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *gatewayServiceClient) SaveSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
@@ -63,10 +75,10 @@ func (c *gatewayServiceClient) GetSession(ctx context.Context, in *SessionReques
 	return out, nil
 }
 
-func (c *gatewayServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
+func (c *gatewayServiceClient) SendFileToKafka(ctx context.Context, in *SendFileRequest, opts ...grpc.CallOption) (*SendFileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(HelloResponse)
-	err := c.cc.Invoke(ctx, GatewayService_SayHello_FullMethodName, in, out, cOpts...)
+	out := new(SendFileResponse)
+	err := c.cc.Invoke(ctx, GatewayService_SendFileToKafka_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +91,10 @@ func (c *gatewayServiceClient) SayHello(ctx context.Context, in *HelloRequest, o
 //
 // rpc 로 gRPC 함수 인터페이스 정의
 type GatewayServiceServer interface {
+	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
 	SaveSession(context.Context, *SessionRequest) (*GenericResponse, error)
 	GetSession(context.Context, *SessionRequest) (*SessionResponse, error)
-	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
+	SendFileToKafka(context.Context, *SendFileRequest) (*SendFileResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
 
@@ -92,14 +105,17 @@ type GatewayServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedGatewayServiceServer struct{}
 
+func (UnimplementedGatewayServiceServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
 func (UnimplementedGatewayServiceServer) SaveSession(context.Context, *SessionRequest) (*GenericResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveSession not implemented")
 }
 func (UnimplementedGatewayServiceServer) GetSession(context.Context, *SessionRequest) (*SessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSession not implemented")
 }
-func (UnimplementedGatewayServiceServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedGatewayServiceServer) SendFileToKafka(context.Context, *SendFileRequest) (*SendFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendFileToKafka not implemented")
 }
 func (UnimplementedGatewayServiceServer) mustEmbedUnimplementedGatewayServiceServer() {}
 func (UnimplementedGatewayServiceServer) testEmbeddedByValue()                        {}
@@ -120,6 +136,24 @@ func RegisterGatewayServiceServer(s grpc.ServiceRegistrar, srv GatewayServiceSer
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&GatewayService_ServiceDesc, srv)
+}
+
+func _GatewayService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HelloRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).SayHello(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_SayHello_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).SayHello(ctx, req.(*HelloRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _GatewayService_SaveSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -158,20 +192,20 @@ func _GatewayService_GetSession_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GatewayService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
+func _GatewayService_SendFileToKafka_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GatewayServiceServer).SayHello(ctx, in)
+		return srv.(GatewayServiceServer).SendFileToKafka(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GatewayService_SayHello_FullMethodName,
+		FullMethod: GatewayService_SendFileToKafka_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GatewayServiceServer).SayHello(ctx, req.(*HelloRequest))
+		return srv.(GatewayServiceServer).SendFileToKafka(ctx, req.(*SendFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -184,6 +218,10 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*GatewayServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "SayHello",
+			Handler:    _GatewayService_SayHello_Handler,
+		},
+		{
 			MethodName: "SaveSession",
 			Handler:    _GatewayService_SaveSession_Handler,
 		},
@@ -192,8 +230,8 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GatewayService_GetSession_Handler,
 		},
 		{
-			MethodName: "SayHello",
-			Handler:    _GatewayService_SayHello_Handler,
+			MethodName: "SendFileToKafka",
+			Handler:    _GatewayService_SendFileToKafka_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

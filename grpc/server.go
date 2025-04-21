@@ -1,9 +1,15 @@
 package grpc
 
 import (
+	"bufio"
 	"context"
+	"fmt"
+	"log"
 	"net"
+	"os"
+	"time"
 
+	"service-gateway/kafka"
 	pb "service-gateway/proto"
 	"service-gateway/redis"
 
@@ -59,4 +65,88 @@ func (s *GatewayServer) GetSession(ctx context.Context, req *pb.SessionRequest) 
 		return &pb.SessionResponse{Value: ""}, err
 	}
 	return &pb.SessionResponse{Value: value}, nil
+}
+
+func (s *GatewayServer) SendFileToKafka(ctx context.Context, req *pb.SendFileRequest) (*pb.SendFileResponse, error) {
+	inputPath := req.GetInputPath()
+	outputPath := req.GetOutputPath()
+	topic := req.GetTopic()
+	brokers := req.GetBrokers()
+
+	in, err := os.Open(inputPath)
+
+	if err != nil {
+		return &pb.SendFileResponse{
+			Success: false,
+			Message: fmt.Sprintf("입력 파일 열기 실패 : %v", err),
+		}, nil
+	}
+
+	scanner := bufio.NewScanner(in)
+	lines := []string{}
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	in.Close()
+
+	if err := scanner.Err(); err != nil {
+		return &pb.SendFileResponse{
+			Success: false,
+			Message: fmt.Sprintf("파일 읽기 오류 : %v", err),
+		}, nil
+	}
+
+	out, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+
+	if err != nil {
+		return &pb.SendFileResponse{
+			Success: false,
+			Message: fmt.Sprintf("출력파일 생성 실패 : %v", err),
+		}, nil
+	}
+
+	defer out.Close()
+
+	writer := bufio.NewWriter(out)
+	lineCount := 0
+
+	for _, line := range lines {
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			return &pb.SendFileResponse{
+				Success: false,
+				Message: fmt.Sprintf("출력 파일 쓰기 실패 : %v", err),
+			}, nil
+		}
+		// kafka 전송
+		err = kafka.ProduceToTopicWithBrokers(ctx, brokers, topic, fmt.Sprintf("%d", time.Now().UnixNano()), line)
+		if err != nil {
+			log.Printf("kafka 전송 실패: %v", err)
+			return &pb.SendFileResponse{
+				Success: false,
+				Message: fmt.Sprintf("kafka 전송 실패 : %v", err),
+			}, nil
+		}
+		lineCount++
+
+	}
+
+	writer.Flush()
+
+	// 원본 파일 내용 제거 (읽은 내용만큼)
+	err = os.Truncate(inputPath, 0)
+	if err != nil {
+		return &pb.SendFileResponse{
+			Success: false,
+			Message: fmt.Sprintf("입력 파일 비우기 실패 : %v", err),
+		}, nil
+	}
+
+	return &pb.SendFileResponse{
+		Success: true,
+		Message: fmt.Sprintf("파일 처리 및 Kafka 전송 완료, line count : %v", lineCount),
+	}, nil
+
 }

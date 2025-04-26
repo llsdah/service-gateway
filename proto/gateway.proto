@@ -5,12 +5,19 @@ package gateway;
 
 // 옵션추가 
 option go_package = "./;proto";
+option java_package = "com.servicegateway.grpc";
+option java_outer_classname = "GatewayProto";
+option java_multiple_files = true;
+
 
 // rpc 로 gRPC 함수 인터페이스 정의 
 service GatewayService {
     rpc SayHello(HelloRequest) returns (HelloResponse);
-    rpc SaveSession(SessionRequest) returns (GenericResponse);
-    rpc GetSession(SessionRequest) returns (SessionResponse);
+    
+    rpc SaveSession(SaveSessionRequest) returns (GenericResponse);
+    rpc GetSession(GetSessionRequest) returns (GenericResponse);
+    rpc SaveSessionWithTarget (SaveSessionWithTargetRequest) returns (GenericResponse);
+    rpc GetSessionWithTarget (GetSessionWithTargetRequest) returns (GenericResponse);
 
     rpc SendFileToKafka (SendFileRequest) returns (SendFileResponse);
 }
@@ -24,14 +31,31 @@ message HelloResponse {
     string message = 1;
 }
 
+
+// REDIS
 // 1,2 = 필드 순서 및 식별자 유니크
-message SessionRequest {
+message SaveSessionRequest {
     string key = 1;
     string value = 2;
+    int64 ttl = 3;
 }
 
-message SessionResponse {
-    string value = 1;
+message GetSessionRequest {
+    string key = 3;
+}
+
+message SaveSessionWithTargetRequest {
+    string ip = 1;
+    string port = 2;
+    string key = 3;
+    string value = 4;
+    int64 ttl = 5; // seconds 
+}
+
+message GetSessionWithTargetRequest {
+    string ip = 1;
+    string port = 2;
+    string key = 3;
 }
 
 message GenericResponse {
@@ -51,5 +75,6 @@ message SendFileResponse {
     string message = 2;
     int32 lines_sent = 3; // 송신된 라인 수 
 }
+
 
 

@@ -19,10 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GatewayService_SayHello_FullMethodName        = "/gateway.GatewayService/SayHello"
-	GatewayService_SaveSession_FullMethodName     = "/gateway.GatewayService/SaveSession"
-	GatewayService_GetSession_FullMethodName      = "/gateway.GatewayService/GetSession"
-	GatewayService_SendFileToKafka_FullMethodName = "/gateway.GatewayService/SendFileToKafka"
+	GatewayService_SayHello_FullMethodName              = "/gateway.GatewayService/SayHello"
+	GatewayService_SaveSession_FullMethodName           = "/gateway.GatewayService/SaveSession"
+	GatewayService_GetSession_FullMethodName            = "/gateway.GatewayService/GetSession"
+	GatewayService_SaveSessionWithTarget_FullMethodName = "/gateway.GatewayService/SaveSessionWithTarget"
+	GatewayService_GetSessionWithTarget_FullMethodName  = "/gateway.GatewayService/GetSessionWithTarget"
+	GatewayService_SendFileToKafka_FullMethodName       = "/gateway.GatewayService/SendFileToKafka"
 )
 
 // GatewayServiceClient is the client API for GatewayService service.
@@ -32,8 +34,10 @@ const (
 // rpc 로 gRPC 함수 인터페이스 정의
 type GatewayServiceClient interface {
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
-	SaveSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
-	GetSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error)
+	SaveSession(ctx context.Context, in *SaveSessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
+	GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
+	SaveSessionWithTarget(ctx context.Context, in *SaveSessionWithTargetRequest, opts ...grpc.CallOption) (*GenericResponse, error)
+	GetSessionWithTarget(ctx context.Context, in *GetSessionWithTargetRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	SendFileToKafka(ctx context.Context, in *SendFileRequest, opts ...grpc.CallOption) (*SendFileResponse, error)
 }
 
@@ -55,7 +59,7 @@ func (c *gatewayServiceClient) SayHello(ctx context.Context, in *HelloRequest, o
 	return out, nil
 }
 
-func (c *gatewayServiceClient) SaveSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
+func (c *gatewayServiceClient) SaveSession(ctx context.Context, in *SaveSessionRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GenericResponse)
 	err := c.cc.Invoke(ctx, GatewayService_SaveSession_FullMethodName, in, out, cOpts...)
@@ -65,10 +69,30 @@ func (c *gatewayServiceClient) SaveSession(ctx context.Context, in *SessionReque
 	return out, nil
 }
 
-func (c *gatewayServiceClient) GetSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error) {
+func (c *gatewayServiceClient) GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SessionResponse)
+	out := new(GenericResponse)
 	err := c.cc.Invoke(ctx, GatewayService_GetSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) SaveSessionWithTarget(ctx context.Context, in *SaveSessionWithTargetRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenericResponse)
+	err := c.cc.Invoke(ctx, GatewayService_SaveSessionWithTarget_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) GetSessionWithTarget(ctx context.Context, in *GetSessionWithTargetRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenericResponse)
+	err := c.cc.Invoke(ctx, GatewayService_GetSessionWithTarget_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +116,10 @@ func (c *gatewayServiceClient) SendFileToKafka(ctx context.Context, in *SendFile
 // rpc 로 gRPC 함수 인터페이스 정의
 type GatewayServiceServer interface {
 	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
-	SaveSession(context.Context, *SessionRequest) (*GenericResponse, error)
-	GetSession(context.Context, *SessionRequest) (*SessionResponse, error)
+	SaveSession(context.Context, *SaveSessionRequest) (*GenericResponse, error)
+	GetSession(context.Context, *GetSessionRequest) (*GenericResponse, error)
+	SaveSessionWithTarget(context.Context, *SaveSessionWithTargetRequest) (*GenericResponse, error)
+	GetSessionWithTarget(context.Context, *GetSessionWithTargetRequest) (*GenericResponse, error)
 	SendFileToKafka(context.Context, *SendFileRequest) (*SendFileResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
@@ -108,11 +134,17 @@ type UnimplementedGatewayServiceServer struct{}
 func (UnimplementedGatewayServiceServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
-func (UnimplementedGatewayServiceServer) SaveSession(context.Context, *SessionRequest) (*GenericResponse, error) {
+func (UnimplementedGatewayServiceServer) SaveSession(context.Context, *SaveSessionRequest) (*GenericResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveSession not implemented")
 }
-func (UnimplementedGatewayServiceServer) GetSession(context.Context, *SessionRequest) (*SessionResponse, error) {
+func (UnimplementedGatewayServiceServer) GetSession(context.Context, *GetSessionRequest) (*GenericResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSession not implemented")
+}
+func (UnimplementedGatewayServiceServer) SaveSessionWithTarget(context.Context, *SaveSessionWithTargetRequest) (*GenericResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveSessionWithTarget not implemented")
+}
+func (UnimplementedGatewayServiceServer) GetSessionWithTarget(context.Context, *GetSessionWithTargetRequest) (*GenericResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSessionWithTarget not implemented")
 }
 func (UnimplementedGatewayServiceServer) SendFileToKafka(context.Context, *SendFileRequest) (*SendFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendFileToKafka not implemented")
@@ -157,7 +189,7 @@ func _GatewayService_SayHello_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _GatewayService_SaveSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SessionRequest)
+	in := new(SaveSessionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -169,13 +201,13 @@ func _GatewayService_SaveSession_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: GatewayService_SaveSession_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GatewayServiceServer).SaveSession(ctx, req.(*SessionRequest))
+		return srv.(GatewayServiceServer).SaveSession(ctx, req.(*SaveSessionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _GatewayService_GetSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SessionRequest)
+	in := new(GetSessionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -187,7 +219,43 @@ func _GatewayService_GetSession_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: GatewayService_GetSession_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GatewayServiceServer).GetSession(ctx, req.(*SessionRequest))
+		return srv.(GatewayServiceServer).GetSession(ctx, req.(*GetSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_SaveSessionWithTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveSessionWithTargetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).SaveSessionWithTarget(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_SaveSessionWithTarget_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).SaveSessionWithTarget(ctx, req.(*SaveSessionWithTargetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_GetSessionWithTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSessionWithTargetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).GetSessionWithTarget(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_GetSessionWithTarget_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).GetSessionWithTarget(ctx, req.(*GetSessionWithTargetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -228,6 +296,14 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSession",
 			Handler:    _GatewayService_GetSession_Handler,
+		},
+		{
+			MethodName: "SaveSessionWithTarget",
+			Handler:    _GatewayService_SaveSessionWithTarget_Handler,
+		},
+		{
+			MethodName: "GetSessionWithTarget",
+			Handler:    _GatewayService_GetSessionWithTarget_Handler,
 		},
 		{
 			MethodName: "SendFileToKafka",

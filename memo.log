@@ -26,3 +26,12 @@ proto에는 SaveSession(SessionRequest) rpc가 있어.
 
 레디스 설정으로 뺴서 연결 필요 
 
+
+
+4/25
+도커 기동방법 
+docker build --no-cache -t service-gateway:0.0.1 .
+
+docker run -p 50051:50051 -e REDIS_HOST=host.docker.internal:6379 -e KAFKA_BROKERS=host.docker.internal:9092 service-gateway:0.0.1
+
+

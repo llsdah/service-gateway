@@ -1,0 +1,6 @@
+# 무시할 파일/디렉토리
+*.tar
+*.log
+*.md
+vendor/
+tmp/

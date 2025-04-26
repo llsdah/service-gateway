@@ -40,33 +40,44 @@ req = 클라이언트 호출 데이터
 ctx = 메타데이터
 redis 저장 후 응답 반환
 */
-func (s *GatewayServer) SaveSession(ctx context.Context, req *pb.SessionRequest) (*pb.GenericResponse, error) {
-	err := redis.SaveSession(ctx, req.Key, req.Value)
+
+func (s *GatewayServer) SaveSession(ctx context.Context, req *pb.SaveSessionRequest) (*pb.GenericResponse, error) {
+	err := redis.SaveSession(ctx, req.Key, req.Value, time.Duration(req.Ttl)*time.Second)
+
 	if err != nil {
 		return &pb.GenericResponse{Success: false, Message: err.Error()}, nil
 	}
 	return &pb.GenericResponse{Success: true, Message: "Saved"}, nil
 }
 
-func (s *GatewayServer) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloResponse, error) {
-	name := req.GetName()
-	if name == "" {
-		name = "World"
-	}
-
-	message := "Hello, " + name + "!"
-	return &pb.HelloResponse{Message: message}, nil
-}
-
-// 세션 조회
-func (s *GatewayServer) GetSession(ctx context.Context, req *pb.SessionRequest) (*pb.SessionResponse, error) {
+func (s *GatewayServer) GetSession(ctx context.Context, req *pb.GetSessionRequest) (*pb.GenericResponse, error) {
 	value, err := redis.GetSession(ctx, req.Key)
 	if err != nil {
-		return &pb.SessionResponse{Value: ""}, err
+		return &pb.GenericResponse{Success: false, Message: err.Error()}, err
 	}
-	return &pb.SessionResponse{Value: value}, nil
+	return &pb.GenericResponse{Success: true, Message: value}, nil
 }
 
+// ip port 용도
+func (s *GatewayServer) SaveSessionWithTarget(ctx context.Context, req *pb.SaveSessionWithTargetRequest) (*pb.GenericResponse, error) {
+	err := redis.SaveSessionWithTarget(ctx, req.Ip, req.Port, req.Key, req.Value, time.Duration(req.Ttl)*time.Second)
+
+	if err != nil {
+		return &pb.GenericResponse{Success: false, Message: err.Error()}, nil
+	}
+	return &pb.GenericResponse{Success: true, Message: "Saved"}, nil
+}
+
+func (s *GatewayServer) GetSessionWithTarget(ctx context.Context, req *pb.GetSessionWithTargetRequest) (*pb.GenericResponse, error) {
+	value, err := redis.GetSessionWithTarget(ctx, req.Ip, req.Port, req.Key)
+
+	if err != nil {
+		return &pb.GenericResponse{Success: false, Message: err.Error()}, err
+	}
+	return &pb.GenericResponse{Success: true, Message: value}, nil
+}
+
+// Kafka
 func (s *GatewayServer) SendFileToKafka(ctx context.Context, req *pb.SendFileRequest) (*pb.SendFileResponse, error) {
 	inputPath := req.GetInputPath()
 	outputPath := req.GetOutputPath()
@@ -149,4 +160,14 @@ func (s *GatewayServer) SendFileToKafka(ctx context.Context, req *pb.SendFileReq
 		Message: fmt.Sprintf("파일 처리 및 Kafka 전송 완료, line count : %v", lineCount),
 	}, nil
 
+}
+
+func (s *GatewayServer) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloResponse, error) {
+	name := req.GetName()
+	if name == "" {
+		name = "World"
+	}
+
+	message := "Hello, " + name + "!"
+	return &pb.HelloResponse{Message: message}, nil
 }

@@ -78,6 +78,42 @@ func (s *GatewayServer) GetSessionWithTarget(ctx context.Context, req *pb.GetSes
 }
 
 // Kafka
+
+func (s *GatewayServer) SendKafkaMessage(ctx context.Context, req *pb.SendKafkaMessageRequest) (*pb.GenericResponse, error) {
+	brokers := req.GetBrokers()
+	topic := req.GetTopic()
+	key := req.GetKey()
+	value := req.GetValue()
+
+	if len(brokers) == 0 {
+		return &pb.GenericResponse{
+			Success: false,
+			Message: "no brokers provided",
+		}, nil
+	}
+
+	if topic == "" {
+		return &pb.GenericResponse{
+			Success: false,
+			Message: "topic is required",
+		}, nil
+	}
+
+	err := kafka.ProduceToTopicWithBrokers(ctx, brokers, topic, key, value)
+
+	if err != nil {
+		log.Printf("kafka 전송 실패 : %v", err)
+		return &pb.GenericResponse{
+			Success: false,
+			Message: fmt.Sprintf("kafka 전송 실패 : %v", err),
+		}, err
+	}
+	return &pb.GenericResponse{
+		Success: true,
+		Message: fmt.Sprintf("kafka sned, topic : %v", topic),
+	}, nil
+}
+
 func (s *GatewayServer) SendFileToKafka(ctx context.Context, req *pb.SendFileRequest) (*pb.SendFileResponse, error) {
 	inputPath := req.GetInputPath()
 	outputPath := req.GetOutputPath()

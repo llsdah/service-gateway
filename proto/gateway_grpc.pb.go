@@ -24,6 +24,7 @@ const (
 	GatewayService_GetSession_FullMethodName            = "/gateway.GatewayService/GetSession"
 	GatewayService_SaveSessionWithTarget_FullMethodName = "/gateway.GatewayService/SaveSessionWithTarget"
 	GatewayService_GetSessionWithTarget_FullMethodName  = "/gateway.GatewayService/GetSessionWithTarget"
+	GatewayService_SendKafkaMessage_FullMethodName      = "/gateway.GatewayService/SendKafkaMessage"
 	GatewayService_SendFileToKafka_FullMethodName       = "/gateway.GatewayService/SendFileToKafka"
 )
 
@@ -33,11 +34,15 @@ const (
 //
 // rpc 로 gRPC 함수 인터페이스 정의
 type GatewayServiceClient interface {
+	// 통신확인
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
+	// Redis
 	SaveSession(ctx context.Context, in *SaveSessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	SaveSessionWithTarget(ctx context.Context, in *SaveSessionWithTargetRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	GetSessionWithTarget(ctx context.Context, in *GetSessionWithTargetRequest, opts ...grpc.CallOption) (*GenericResponse, error)
+	// kafka
+	SendKafkaMessage(ctx context.Context, in *SendKafkaMessageRequest, opts ...grpc.CallOption) (*GenericResponse, error)
 	SendFileToKafka(ctx context.Context, in *SendFileRequest, opts ...grpc.CallOption) (*SendFileResponse, error)
 }
 
@@ -99,6 +104,16 @@ func (c *gatewayServiceClient) GetSessionWithTarget(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *gatewayServiceClient) SendKafkaMessage(ctx context.Context, in *SendKafkaMessageRequest, opts ...grpc.CallOption) (*GenericResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenericResponse)
+	err := c.cc.Invoke(ctx, GatewayService_SendKafkaMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gatewayServiceClient) SendFileToKafka(ctx context.Context, in *SendFileRequest, opts ...grpc.CallOption) (*SendFileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SendFileResponse)
@@ -115,11 +130,15 @@ func (c *gatewayServiceClient) SendFileToKafka(ctx context.Context, in *SendFile
 //
 // rpc 로 gRPC 함수 인터페이스 정의
 type GatewayServiceServer interface {
+	// 통신확인
 	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
+	// Redis
 	SaveSession(context.Context, *SaveSessionRequest) (*GenericResponse, error)
 	GetSession(context.Context, *GetSessionRequest) (*GenericResponse, error)
 	SaveSessionWithTarget(context.Context, *SaveSessionWithTargetRequest) (*GenericResponse, error)
 	GetSessionWithTarget(context.Context, *GetSessionWithTargetRequest) (*GenericResponse, error)
+	// kafka
+	SendKafkaMessage(context.Context, *SendKafkaMessageRequest) (*GenericResponse, error)
 	SendFileToKafka(context.Context, *SendFileRequest) (*SendFileResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
@@ -145,6 +164,9 @@ func (UnimplementedGatewayServiceServer) SaveSessionWithTarget(context.Context, 
 }
 func (UnimplementedGatewayServiceServer) GetSessionWithTarget(context.Context, *GetSessionWithTargetRequest) (*GenericResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSessionWithTarget not implemented")
+}
+func (UnimplementedGatewayServiceServer) SendKafkaMessage(context.Context, *SendKafkaMessageRequest) (*GenericResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendKafkaMessage not implemented")
 }
 func (UnimplementedGatewayServiceServer) SendFileToKafka(context.Context, *SendFileRequest) (*SendFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendFileToKafka not implemented")
@@ -260,6 +282,24 @@ func _GatewayService_GetSessionWithTarget_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewayService_SendKafkaMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendKafkaMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).SendKafkaMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_SendKafkaMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).SendKafkaMessage(ctx, req.(*SendKafkaMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GatewayService_SendFileToKafka_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SendFileRequest)
 	if err := dec(in); err != nil {
@@ -304,6 +344,10 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSessionWithTarget",
 			Handler:    _GatewayService_GetSessionWithTarget_Handler,
+		},
+		{
+			MethodName: "SendKafkaMessage",
+			Handler:    _GatewayService_SendKafkaMessage_Handler,
 		},
 		{
 			MethodName: "SendFileToKafka",

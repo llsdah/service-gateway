@@ -12,13 +12,17 @@ option java_multiple_files = true;
 
 // rpc 로 gRPC 함수 인터페이스 정의 
 service GatewayService {
+    // 통신확인
     rpc SayHello(HelloRequest) returns (HelloResponse);
     
+    // Redis 
     rpc SaveSession(SaveSessionRequest) returns (GenericResponse);
     rpc GetSession(GetSessionRequest) returns (GenericResponse);
     rpc SaveSessionWithTarget (SaveSessionWithTargetRequest) returns (GenericResponse);
     rpc GetSessionWithTarget (GetSessionWithTargetRequest) returns (GenericResponse);
 
+    // kafka
+    rpc SendKafkaMessage(SendKafkaMessageRequest) returns (GenericResponse);
     rpc SendFileToKafka (SendFileRequest) returns (SendFileResponse);
 }
 
@@ -63,11 +67,19 @@ message GenericResponse {
     string message = 2;
 }
 
+
+message SendKafkaMessageRequest {
+    repeated string brokers = 1; 
+    string topic = 2;
+    string key = 3; 
+    string value = 4;
+}
+
 message SendFileRequest {
-    string topic = 1;
-    string input_path = 2;
-    string output_path = 3;
-    repeated string brokers = 4; // ["localhost:9092","kafka1:9093"]
+    repeated string brokers = 1; // ["localhost:9092","kafka1:9093"]
+    string topic = 2;
+    string input_path = 3;
+    string output_path = 4;
 }
 
 message SendFileResponse {

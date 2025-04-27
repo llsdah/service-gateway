@@ -404,19 +404,87 @@ func (x *GenericResponse) GetMessage() string {
 	return ""
 }
 
+type SendKafkaMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Brokers       []string               `protobuf:"bytes,1,rep,name=brokers,proto3" json:"brokers,omitempty"`
+	Topic         string                 `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
+	Key           string                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Value         string                 `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendKafkaMessageRequest) Reset() {
+	*x = SendKafkaMessageRequest{}
+	mi := &file_gateway_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendKafkaMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendKafkaMessageRequest) ProtoMessage() {}
+
+func (x *SendKafkaMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendKafkaMessageRequest.ProtoReflect.Descriptor instead.
+func (*SendKafkaMessageRequest) Descriptor() ([]byte, []int) {
+	return file_gateway_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SendKafkaMessageRequest) GetBrokers() []string {
+	if x != nil {
+		return x.Brokers
+	}
+	return nil
+}
+
+func (x *SendKafkaMessageRequest) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *SendKafkaMessageRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *SendKafkaMessageRequest) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
 type SendFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	InputPath     string                 `protobuf:"bytes,2,opt,name=input_path,json=inputPath,proto3" json:"input_path,omitempty"`
-	OutputPath    string                 `protobuf:"bytes,3,opt,name=output_path,json=outputPath,proto3" json:"output_path,omitempty"`
-	Brokers       []string               `protobuf:"bytes,4,rep,name=brokers,proto3" json:"brokers,omitempty"` // ["localhost:9092","kafka1:9093"]
+	Brokers       []string               `protobuf:"bytes,1,rep,name=brokers,proto3" json:"brokers,omitempty"` // ["localhost:9092","kafka1:9093"]
+	Topic         string                 `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
+	InputPath     string                 `protobuf:"bytes,3,opt,name=input_path,json=inputPath,proto3" json:"input_path,omitempty"`
+	OutputPath    string                 `protobuf:"bytes,4,opt,name=output_path,json=outputPath,proto3" json:"output_path,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SendFileRequest) Reset() {
 	*x = SendFileRequest{}
-	mi := &file_gateway_proto_msgTypes[7]
+	mi := &file_gateway_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -428,7 +496,7 @@ func (x *SendFileRequest) String() string {
 func (*SendFileRequest) ProtoMessage() {}
 
 func (x *SendFileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[7]
+	mi := &file_gateway_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -441,7 +509,14 @@ func (x *SendFileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendFileRequest.ProtoReflect.Descriptor instead.
 func (*SendFileRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{7}
+	return file_gateway_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SendFileRequest) GetBrokers() []string {
+	if x != nil {
+		return x.Brokers
+	}
+	return nil
 }
 
 func (x *SendFileRequest) GetTopic() string {
@@ -465,13 +540,6 @@ func (x *SendFileRequest) GetOutputPath() string {
 	return ""
 }
 
-func (x *SendFileRequest) GetBrokers() []string {
-	if x != nil {
-		return x.Brokers
-	}
-	return nil
-}
-
 type SendFileResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
@@ -483,7 +551,7 @@ type SendFileResponse struct {
 
 func (x *SendFileResponse) Reset() {
 	*x = SendFileResponse{}
-	mi := &file_gateway_proto_msgTypes[8]
+	mi := &file_gateway_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -495,7 +563,7 @@ func (x *SendFileResponse) String() string {
 func (*SendFileResponse) ProtoMessage() {}
 
 func (x *SendFileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[8]
+	mi := &file_gateway_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -508,7 +576,7 @@ func (x *SendFileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendFileResponse.ProtoReflect.Descriptor instead.
 func (*SendFileResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{8}
+	return file_gateway_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SendFileResponse) GetSuccess() bool {
@@ -559,26 +627,32 @@ const file_gateway_proto_rawDesc = "" +
 	"\x03key\x18\x03 \x01(\tR\x03key\"E\n" +
 	"\x0fGenericResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\x81\x01\n" +
-	"\x0fSendFileRequest\x12\x14\n" +
-	"\x05topic\x18\x01 \x01(\tR\x05topic\x12\x1d\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"q\n" +
+	"\x17SendKafkaMessageRequest\x12\x18\n" +
+	"\abrokers\x18\x01 \x03(\tR\abrokers\x12\x14\n" +
+	"\x05topic\x18\x02 \x01(\tR\x05topic\x12\x10\n" +
+	"\x03key\x18\x03 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x04 \x01(\tR\x05value\"\x81\x01\n" +
+	"\x0fSendFileRequest\x12\x18\n" +
+	"\abrokers\x18\x01 \x03(\tR\abrokers\x12\x14\n" +
+	"\x05topic\x18\x02 \x01(\tR\x05topic\x12\x1d\n" +
 	"\n" +
-	"input_path\x18\x02 \x01(\tR\tinputPath\x12\x1f\n" +
-	"\voutput_path\x18\x03 \x01(\tR\n" +
-	"outputPath\x12\x18\n" +
-	"\abrokers\x18\x04 \x03(\tR\abrokers\"e\n" +
+	"input_path\x18\x03 \x01(\tR\tinputPath\x12\x1f\n" +
+	"\voutput_path\x18\x04 \x01(\tR\n" +
+	"outputPath\"e\n" +
 	"\x10SendFileResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1d\n" +
 	"\n" +
-	"lines_sent\x18\x03 \x01(\x05R\tlinesSent2\xcf\x03\n" +
+	"lines_sent\x18\x03 \x01(\x05R\tlinesSent2\x9f\x04\n" +
 	"\x0eGatewayService\x129\n" +
 	"\bSayHello\x12\x15.gateway.HelloRequest\x1a\x16.gateway.HelloResponse\x12D\n" +
 	"\vSaveSession\x12\x1b.gateway.SaveSessionRequest\x1a\x18.gateway.GenericResponse\x12B\n" +
 	"\n" +
 	"GetSession\x12\x1a.gateway.GetSessionRequest\x1a\x18.gateway.GenericResponse\x12X\n" +
 	"\x15SaveSessionWithTarget\x12%.gateway.SaveSessionWithTargetRequest\x1a\x18.gateway.GenericResponse\x12V\n" +
-	"\x14GetSessionWithTarget\x12$.gateway.GetSessionWithTargetRequest\x1a\x18.gateway.GenericResponse\x12F\n" +
+	"\x14GetSessionWithTarget\x12$.gateway.GetSessionWithTargetRequest\x1a\x18.gateway.GenericResponse\x12N\n" +
+	"\x10SendKafkaMessage\x12 .gateway.SendKafkaMessageRequest\x1a\x18.gateway.GenericResponse\x12F\n" +
 	"\x0fSendFileToKafka\x12\x18.gateway.SendFileRequest\x1a\x19.gateway.SendFileResponseB3\n" +
 	"\x17com.servicegateway.grpcB\fGatewayProtoP\x01Z\b./;protob\x06proto3"
 
@@ -594,7 +668,7 @@ func file_gateway_proto_rawDescGZIP() []byte {
 	return file_gateway_proto_rawDescData
 }
 
-var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_gateway_proto_goTypes = []any{
 	(*HelloRequest)(nil),                 // 0: gateway.HelloRequest
 	(*HelloResponse)(nil),                // 1: gateway.HelloResponse
@@ -603,8 +677,9 @@ var file_gateway_proto_goTypes = []any{
 	(*SaveSessionWithTargetRequest)(nil), // 4: gateway.SaveSessionWithTargetRequest
 	(*GetSessionWithTargetRequest)(nil),  // 5: gateway.GetSessionWithTargetRequest
 	(*GenericResponse)(nil),              // 6: gateway.GenericResponse
-	(*SendFileRequest)(nil),              // 7: gateway.SendFileRequest
-	(*SendFileResponse)(nil),             // 8: gateway.SendFileResponse
+	(*SendKafkaMessageRequest)(nil),      // 7: gateway.SendKafkaMessageRequest
+	(*SendFileRequest)(nil),              // 8: gateway.SendFileRequest
+	(*SendFileResponse)(nil),             // 9: gateway.SendFileResponse
 }
 var file_gateway_proto_depIdxs = []int32{
 	0, // 0: gateway.GatewayService.SayHello:input_type -> gateway.HelloRequest
@@ -612,15 +687,17 @@ var file_gateway_proto_depIdxs = []int32{
 	3, // 2: gateway.GatewayService.GetSession:input_type -> gateway.GetSessionRequest
 	4, // 3: gateway.GatewayService.SaveSessionWithTarget:input_type -> gateway.SaveSessionWithTargetRequest
 	5, // 4: gateway.GatewayService.GetSessionWithTarget:input_type -> gateway.GetSessionWithTargetRequest
-	7, // 5: gateway.GatewayService.SendFileToKafka:input_type -> gateway.SendFileRequest
-	1, // 6: gateway.GatewayService.SayHello:output_type -> gateway.HelloResponse
-	6, // 7: gateway.GatewayService.SaveSession:output_type -> gateway.GenericResponse
-	6, // 8: gateway.GatewayService.GetSession:output_type -> gateway.GenericResponse
-	6, // 9: gateway.GatewayService.SaveSessionWithTarget:output_type -> gateway.GenericResponse
-	6, // 10: gateway.GatewayService.GetSessionWithTarget:output_type -> gateway.GenericResponse
-	8, // 11: gateway.GatewayService.SendFileToKafka:output_type -> gateway.SendFileResponse
-	6, // [6:12] is the sub-list for method output_type
-	0, // [0:6] is the sub-list for method input_type
+	7, // 5: gateway.GatewayService.SendKafkaMessage:input_type -> gateway.SendKafkaMessageRequest
+	8, // 6: gateway.GatewayService.SendFileToKafka:input_type -> gateway.SendFileRequest
+	1, // 7: gateway.GatewayService.SayHello:output_type -> gateway.HelloResponse
+	6, // 8: gateway.GatewayService.SaveSession:output_type -> gateway.GenericResponse
+	6, // 9: gateway.GatewayService.GetSession:output_type -> gateway.GenericResponse
+	6, // 10: gateway.GatewayService.SaveSessionWithTarget:output_type -> gateway.GenericResponse
+	6, // 11: gateway.GatewayService.GetSessionWithTarget:output_type -> gateway.GenericResponse
+	6, // 12: gateway.GatewayService.SendKafkaMessage:output_type -> gateway.GenericResponse
+	9, // 13: gateway.GatewayService.SendFileToKafka:output_type -> gateway.SendFileResponse
+	7, // [7:14] is the sub-list for method output_type
+	0, // [0:7] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -637,7 +714,7 @@ func file_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

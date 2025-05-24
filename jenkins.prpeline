@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+        
+        stage('git checkout') {
+            steps {
+                // Get some code from a GitHub repository
+                 git branch: 'main', url: 'https://github.com/llsdah/service-gateway.git'
+
+            }
+
+            //post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                //success {
+                    //junit '**/target/surefire-reports/TEST-*.xml'
+                  //  archiveArtifacts 'target/*.jar'
+                //}
+            //}
+        }
+        
+        stage('Print Current Directory') {
+            steps {
+                script {
+                    // 현재 경로를 출력
+                    echo "Current directory: ${pwd()}"
+                }
+            }
+        }
+ 
+ 
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Docker 이미지를 빌드
+                    echo 'Building Docker image...'
+                    sh 'docker build --no-cache -t service-gateway:0.0.1 .'
+                }
+            }
+        }
+        
+        stage('Post-build') {
+            steps {
+                echo 'Docker image build complete.'
+            }
+        }
+        
+    }
+    
+}

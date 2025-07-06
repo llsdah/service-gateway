@@ -78,7 +78,6 @@ func (s *GatewayServer) GetSessionWithTarget(ctx context.Context, req *pb.GetSes
 }
 
 // Kafka
-
 func (s *GatewayServer) SendKafkaMessage(ctx context.Context, req *pb.SendKafkaMessageRequest) (*pb.GenericResponse, error) {
 	brokers := req.GetBrokers()
 	topic := req.GetTopic()

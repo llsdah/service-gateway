@@ -10,6 +10,7 @@ import (
 )
 
 func SetSession(c *gin.Context) {
+
 	var session model.SessionData
 	ctx := c.Request.Context()
 

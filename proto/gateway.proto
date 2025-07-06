@@ -16,10 +16,10 @@ service GatewayService {
     rpc SayHello(HelloRequest) returns (HelloResponse);
     
     // Redis 
-    rpc SaveSession(SaveSessionRequest) returns (GenericResponse);
-    rpc GetSession(GetSessionRequest) returns (GenericResponse);
-    rpc SaveSessionWithTarget (SaveSessionWithTargetRequest) returns (GenericResponse);
-    rpc GetSessionWithTarget (GetSessionWithTargetRequest) returns (GenericResponse);
+    rpc Save(SaveSessionRequest) returns (GenericResponse);
+    rpc Session(GetSessionRequest) returns (GenericResponse);
+    rpc SaveWithTarget (SaveSessionWithTargetRequest) returns (GenericResponse);
+    rpc SessionWithTarget (GetSessionWithTargetRequest) returns (GenericResponse);
 
     // kafka
     rpc SendKafkaMessage(SendKafkaMessageRequest) returns (GenericResponse);

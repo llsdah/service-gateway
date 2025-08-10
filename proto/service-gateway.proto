@@ -1,0 +1,81 @@
+
+syntax = "proto3";
+
+package servie.gateway;
+
+// 옵션추가 
+option go_package = "./;proto";
+option java_package = "com.service.gateway.grpc";
+option java_outer_classname = "SeviceGatewayProto";
+option java_multiple_files = true;
+
+
+service HelloService {
+    // 통신확인
+    rpc SayHello(HelloRequest) returns (HelloResponse);
+    
+}
+
+// rpc 로 gRPC 함수 인터페이스 정의 
+service SessionService {
+    
+    // Redis 
+    rpc SetSession(SetSessionRequest) returns (GenericResponse);
+    rpc CreateSession(CreateSessionRequest) returns (GenericResponse);
+    rpc GetSession(GetSessionRequest) returns (GenericResponse);
+    rpc SetSessionWithTarget (SetSessionWithTargetRequest) returns (GenericResponse);
+    rpc GetSessionWithTarget (GetSessionWithTargetRequest) returns (GenericResponse);
+
+}
+
+// 구조체 역할
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloResponse {
+    string message = 1;
+}
+
+
+// REDIS
+// 1,2 = 필드 순서 및 식별자 유니크
+message SetSessionRequest {
+    string key = 1;
+    string value = 2;
+    int64 ttl = 3;
+}
+
+message CreateSessionRequest {
+    string key = 1;
+    string value = 2;
+    int64 ttl = 3;
+}
+
+message GetSessionRequest {
+    string key = 3;
+}
+
+message SetSessionWithTargetRequest {
+    string host = 1;
+    string username = 2;
+    string password = 3;
+    string key = 4;
+    string value = 5;
+    int64 ttl = 6; // seconds 
+}
+
+message GetSessionWithTargetRequest {
+    string host = 1;
+    string username = 2;
+    string password = 3;
+    string key = 4;
+}
+
+message GenericResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+
+

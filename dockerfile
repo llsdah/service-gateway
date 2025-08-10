@@ -1,15 +1,16 @@
-# 빌드 스테이지
-FROM golang:1.24 AS builder
+### 1️⃣ 빌드 스테이지
+FROM golang:1.24.4 AS builder
 
 WORKDIR /app
 
+# 의존성 다운로드
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
 
 # ✅ 리눅스용 바이너리로 빌드 (절대 필수) - 정적파일로 생성 필요 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-gateway main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-gateway cmd/server/main.go
 
 # 디버깅용 실행 이미지
 # FROM alpine:latest
@@ -29,5 +30,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-gateway main.go
 FROM gcr.io/distroless/static
 
 COPY --from=builder /app/service-gateway /service-gateway
+COPY config.yaml /config.yaml
 
 ENTRYPOINT ["/service-gateway"]

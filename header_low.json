@@ -1,0 +1,55 @@
+{
+    "request_headers": {
+      "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+      "tracestate": "acme=foo123,contrib=bar",
+      "x-request-id": "9f5c2c00f-1b2c-4d9e-9a1e-3c2b5a7c8d01",
+      "x-client-id": "orders-service",
+      "authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "idempotency-key": "e1c7b1c8-0d9c-4c1a-9a86-6c2b1f2d9d20",
+      "x-tenant-id": "t_12345",
+      "accept-language": "ko-KR, en-US;q=0.8",
+      "x-timezone": "Asia/Seoul",
+      "x-feature-flags": "checkout_v2,ab:bucket-3",
+      "content-type": "application/json; charset=utf-8",
+      "accept": "application/json",
+      "forwarded": "for=203.0.113.9;proto=https;host=api.internal.acme",
+      "x-retry-attempt": "1"
+    },
+    "response_headers": {
+      "x-request-id": "9f5c2c00f-1b2c-4d9e-9a1e-3c2b5a7c8d01",
+      "content-type": "application/json; charset=utf-8",
+      "vary": "accept-language, x-tenant-id"
+    },
+    "_policy": {
+      "max_header_length": 8192,
+      "allow_repeatable_headers": ["x-feature-flags"],
+      "forward_whitelist": [
+        "traceparent",
+        "tracestate",
+        "x-request-id",
+        "x-client-id",
+        "authorization",
+        "idempotency-key",
+        "x-tenant-id",
+        "accept-language",
+        "x-timezone",
+        "x-feature-flags",
+        "content-type",
+        "accept",
+        "forwarded",
+        "x-forwarded-for",
+        "x-retry-attempt"
+      ],
+      "hop_by_hop_blacklist": [
+        "connection",
+        "proxy-connection",
+        "keep-alive",
+        "transfer-encoding",
+        "upgrade",
+        "te",
+        "trailer"
+      ],
+      "security_notes": "No PII/secret in headers; use reference keys. Prefer mTLS; keep JWT TTL short."
+    }
+  }
+  

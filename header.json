@@ -1,0 +1,106 @@
+{
+    // =========================
+    // Backend-to-Backend (B2B) Request Headers
+    // =========================
+    "request_headers": {
+      // 분산추적 표준(W3C). 게이트웨이/서비스가 그대로 전파
+      "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01", // version-traceid-spanid-flags
+      "tracestate": "acme=foo123,contrib=bar", // 선택. 공급자 상태 확장
+  
+      // 내부 상관관계 ID(로그 조인/감사). 게이트웨이가 생성(없으면)
+      "x-request-id": "9f5c2c00f-1b2c-4d9e-9a1e-3c2b5a7c8d01", // <=128 chars, ascii-safe
+  
+      // 호출 주체(머신/서비스) 식별자
+      "x-client-id": "orders-service", // 예: 'web-frontend'가 아닌 순수 서비스명
+  
+      // 서비스-간 인증(권장: mTLS + 짧은 TTL 토큰)
+      // - gRPC면 metadata 'authorization'
+      // - SPIFFE/SVID 사용 시 토큰 없이도 OK(대신 아이덴티티는 피어 인증서에서)
+      "authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  
+      // 멱등성 보장 키(POST/PUT 재시도 시 중복 생성 방지)
+      "idempotency-key": "e1c7b1c8-0d9c-4c1a-9a86-6c2b1f2d9d20", // UUID 권장
+  
+      // 멀티테넌시 라우팅/과금/격리(PII 금지, 내부 키만)
+      "x-tenant-id": "t_12345",
+  
+      // 국제화가 필요할 때만 사용(백엔드 렌더/서식). 불필요하면 제거 가능
+      "accept-language": "ko-KR, en-US;q=0.8",
+  
+      // 시간대 컨텍스트가 필요한 도메인에서만 사용(리포트 컷오프 등)
+      "x-timezone": "Asia/Seoul", // IANA TZ
+  
+      // 경량 피처 플래그/실험 슬라이스(큰 페이로드 금지)
+      "x-feature-flags": "checkout_v2,ab:bucket-3",
+  
+      // 표준 콘텐츠 협상(커스텀 인코딩 헤더 금지)
+      "content-type": "application/json; charset=utf-8",
+      "accept": "application/json",
+  
+      // 인프라(프록시/로드밸런서)가 설정. 감사/보안 규칙에 유용
+      "forwarded": "for=203.0.113.9;proto=https;host=api.internal.acme",
+      // 대체 관용: "x-forwarded-for": "203.0.113.9, 10.0.0.3"
+  
+      // (선택) 재시도 컨텍스트: 재시도 횟수/원인 기반 라우팅·로깅
+      "x-retry-attempt": "1"
+    },
+  
+    // =========================
+    // Backend-to-Backend Response Headers
+    // =========================
+    "response_headers": {
+      // 상관관계 ID 에코(클라/서버 로그 조인)
+      "x-request-id": "9f5c2c00f-1b2c-4d9e-9a1e-3c2b5a7c8d01",
+  
+      // 응답 포맷
+      "content-type": "application/json; charset=utf-8",
+  
+      // (선택) 캐시/프록시 안전성: 요청 헤더가 응답에 영향 줄 때만 지정
+      "vary": "accept-language, x-tenant-id"
+    },
+  
+    // =========================
+    // Field-level Policy (간단 규칙)
+    // =========================
+    "_policy": {
+      // 단일 헤더 길이 보수적 한도(환경에 맞춰 조정)
+      "max_header_length": 8192,
+  
+      // 동일 키 다중 사용 허용 목록(필요 시만)
+      "allow_repeatable_headers": ["x-feature-flags"],
+  
+      // 리버스 프록시/게이트웨이 전파 화이트리스트
+      "forward_whitelist": [
+        "traceparent",
+        "tracestate",
+        "x-request-id",
+        "x-client-id",
+        "authorization",
+        "idempotency-key",
+        "x-tenant-id",
+        "accept-language",
+        "x-timezone",
+        "x-feature-flags",
+        "content-type",
+        "accept",
+        "forwarded",
+        "x-forwarded-for",
+        "x-retry-attempt"
+      ],
+  
+      // Hop-by-hop 헤더(프록시가 제거/차단)
+      "hop_by_hop_blacklist": [
+        "connection",
+        "proxy-connection",
+        "keep-alive",
+        "transfer-encoding",
+        "upgrade",
+        "te",
+        "trailer"
+      ],
+  
+      // 금지 사항: PII/비밀 원문 금지(참조키만 전송), 대용량 리스트/바이너리 금지
+      "security_notes": "No PII/secret in headers; use reference keys. Prefer mTLS; keep JWT TTL short."
+    }
+  }
+  

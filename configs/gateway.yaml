@@ -1,0 +1,83 @@
+application:
+  group_code: "00006"
+  log:
+    inbound:
+      request: "log.source.in"
+      response: "log.source.out"
+    outbound:
+      request: "log.target.in"
+      response: "log.target.out"
+
+server:
+  addr: ":8092"
+  read_timeout_ms: 5000
+  write_timeout_ms: 5000
+  idle_timeout_ms: 60000
+
+db:
+  enabled: false   
+  driver: "mysql"        # "mysql" (MariaDB 드라이버)
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: "1234"
+  name: "test"      # schema/database name
+
+
+hosts:
+  session-service: localhost:8090
+  "00003": http://localhost:8090
+  order-service: localhost:8092
+  mock-host: localhost:8093
+
+routes:
+  - name: save-user 
+    match:
+      path_prefix: /save/user
+      methods: [POST, PUT]
+    backend:
+      scheme: http
+      host: "localhost:8090"
+      path_rewrite: "/v1/session/save"  # /echo/* -> /anything
+    options:
+      require_session: true
+      generate_if_missing: true
+
+
+# === dynamic session endpoints ===
+  - name: find-user-info
+    match:
+      path_pattern: /get/user/{field}
+      methods: [GET]
+    backend:
+      scheme: http
+      host: "localhost:8090"
+      path_rewrite: "/v1/session/find/field"
+      method: "POST"
+    options:
+      require_session: false
+      generate_if_missing: true
+
+  - name: update
+    match:
+      path_prefix: /api/update
+      methods: [GET]
+    backend:
+      scheme: http
+      host: "localhost:8090"
+      path_rewrite: "/v1/update"
+    options:
+      require_session: true
+      generate_if_missing: false
+
+  - name: refresh
+    match:
+      path_prefix: /api/refresh
+      methods: [POST, PUT]
+    backend:
+      scheme: http
+      host: "localhost:8090"
+      path_rewrite: "/v1/refresh"
+    options:
+      require_session: true
+      generate_if_missing: false

@@ -1,127 +1,90 @@
-# service-gateway
-
-proto 설치 위해 
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-# 터미널에서 proto 디렉토리에 위치하고
-protoc --go_out=. --go-grpc_out=. session-service.proto
-
-+ protoc 설치 및 환경변수 등록
-root 디렉토리에서 아래 명령어 수행
-protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. proto/service-gateway.proto
+* 해야 할것 
+- api 통신 구조 만들기 : 
+- 요청 들어온 url 로 전달 
+- 요청 들어온 url 매핑 후 전달, 
 
 
-다음 질문
+1. 해야할 것은 마리아 DB의 API_PATH를 읽어서 1대1이 되었던 뭐가 되었건 실행하기 
+  - 완료 
+  - 고민해야될 부분
 
-Go로 작성 중이고, gRPC 서버는 proto까지 완성한 상태야.
-이제 클라이언트에서 Redis 세션을 저장하는 요청을 보내고 싶은데,
-pb.NewGatewayServiceClient(...) 호출 예시랑 요청 메시지 구성은 어떻게 하면 좋을까?
-proto에는 SaveSession(SessionRequest) rpc가 있어.
+2. user 정보에 대한 필드 추가만 해야하는 내용 확인 
+  - 완료
+    - 임의 Session 필드 생성 값이 없다면 UUID로 생성 후 session-service 데이터 적재 -> 값입력
+  - 고민해야될 부분
+    - find GET으로 변경 요청은 POST
+3. http 헤더 생성 및 조회 전달. 
+  - 진행중
+  - 고민해야될 부분
 
+* Header 정의 
+-> 추가내용이 있다면 확인 
 
-4/21
-레디스 적재, 조회 0 
-카프카 적재 0, 파일로그 읽어서 적재 및 백업 
-
-카프카 적재 방식 고민, 파일 사용? 혹은 호출 
-
-레디스 설정으로 뺴서 연결 필요 
-
-
-4/25
-도커 기동방법 
-docker build --no-cache -t service-gateway:0.0.1 .
-
-docker run -p 50052:50052 -p 8090:8090 -e REDIS_HOST=host.docker.internal:6379 -e KAFKA_BROKERS=host.docker.internal:9092 service-gateway:0.0.1
-
-
+- TCID : 거래 추척 , 년월일 (8자리) + hostname(8자리) + 거래시분초(8자리)  + 임의번호(8자리 숫자+ 소문자)
+- TCIDSRNO : 4자리 0001
+- BizSrvcCd
+- BizSrvcIp 
+- idempotency-key : x-fw-header에 데이터존재시 이중거래 G/W 체크, 없다면 미체크 
+- fw_AUTHORIZATION : x-fw-header에 데이터존재시 인증 ENC 내의 코드  : 
 
 
-// 고정 토픽
-func ProduceMessage(ctx context.Context, key, value string) error {
-	msg := kafka.Message{
-		Key:   []byte(key),
-		Value: []byte(value),
-	}
+* 별도 생성헤더 
+- UUID 값 
 
-	// kafka 메시지 전송 produce 객체 설정
-	writer := &kafka.Writer{
-		Addr:     kafka.TCP("localhost:9092"), // 브로커 주소
-		Topic:    "gateway-events",            // 기본메시지 토픽
-		Balancer: &kafka.LeastBytes{},         // 로드밸런싱 방식
-	}
+* 마리아DB, Oracle
+- FW URL : SID_API_DTL_MNG, 컬럼명 : API_GROUP_CD, API_CD, API_PATH, USG_YN 
+- FW URL GROUP : SID_API_GRP_MNG, 컬럼명 : API_GROUP_CD, USG_YN
+- 설정테이블 : SID_API_EST_MNG, 컬럼명 : API_GROUP_CD , USG_YN, API_EST_KEY, API_EST_VAL
+- 업무서비스 코드 : SID_CMN_SRVC_MNG 컬럼명 : CMN_SRVC_CD
 
-	// 비동기 전송
-	err := writer.WriteMessages(ctx, msg)
-	if err != nil {
-		log.Printf("Kafka produce error: %v", err)
-	}
-	// 에러시 로그 찍고 레어 리턴
-	return err
+
+- 해당 시스템에서 허용되는 FW URL GROUP ->
+- FW URL GROUP : SID_BIZ_SRVC_API_RLP, 컬럼명 : BIZ_SRVC_CD, API_CD, USG_YN
+
+
+
+
+* 문제 특이 사항 
+1. hostname 아는 문제 
+- 현재 API 가 body에 입력됩 해당 데이터가 아닌 경우 매칭이 힘듬 
+-> yaml 에서 서비스 명칭을 가지고 오는 부분이 필요 단 테이블의 url은 키가 되어야 합니다. 
+
+
+* DB 조회
+service-gateway (API_GOURP_CD == 006 ) 에서는 
+SID_API_DTL_MNG -> API_PATH ( USG_YN = 'Y' && API_TYP_CD = '00' ) 로만 조회 ->
+SID_API_GRP_MNG ( USG_YN = 'Y')  API_GROUP_CD YN 여부 확인 true 인것 만 시작 
+API_GROUP_CD 으로 HOST mapping 시킨다 
+
+
+
+log적재 관련 kafka 연결 
+SID_API_EST_MNG (API_GOURP_CD == 006 & USG_YN = 'Y') 조회 
+
+log.source.in
+log.target.out
+log.source.out
+log.target.in
+
+json format 
+
+{
+   "timeStamp" : "",
+   "tcId":"",
+   "tcIdSrno":1, #int
+   "bizSrvcCd":"",
+   "bizSrvcIp":"",
+   "rasTyp":"11",
+   "nmlYn":"Y",
+   "apiPath":"/sid/",
+   "cmmSrvcCd":"001",
+   "cmmBizSrvcCd":"00001",
+   "cmmBizSrvcSrno":1, #int
+   "apiGroupCd":"001",
+   "apiCd":"00001",
+   "guid":"",
+   "interId":"",
+   "messageCd":"",
+   "hostName":"",
+   "data": {}
 }
-
-
-docker run -d  -p 8082:8080 -p 50002:50000 --name jenkins --user root  -v /var/run/docker.sock:/var/run/docker.sock  -v jenkins_home:/var/jenkins_home jenkins/jenkins
-
-docker 설치 
-apt-get update
-apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io
-
-apt-get install -y nano
-apt-get install -y vim
-echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable" | tee /etc/apt/sources.list.d/docker.list
-
-
-
-// 오프라인환경 이동시 필요한 자료들 
-
-✅ 1. 필요한 라이브러리 확인 (Windows에서)
-go mod tidy
-go mod vendor
-go.mod, go.sum, vendor 디렉토리가 완성됨
-
-✅ 2. 모든 의존 라이브러리 사전 다운로드
-Windows에서 아래 명령 실행:
-
-go mod download
-✅ 3. 오프라인 패키지 백업
-$GOPATH/pkg/mod 디렉토리 통째로 복사
-또는 아래 명령으로 tar 압축:
-tar -cvf go_mod_cache.tar $GOPATH/pkg/mod
-
-✅ 4. Linux 개발환경으로 복사할 항목
-vendor/ 디렉토리
-
-go.mod, go.sum
-
-$GOPATH/pkg/mod 압축본 또는 전체 복사
-
-(선택) bin/, cache/ 등도 함께 복사하면 빌드 캐시 활용 가능
-
-✅ 5. Linux에서 설정
-동일한 Go 버전 설치
-
-환경변수 설정:
-export GOPATH=/your/path/to/gopath
-export GO111MODULE=on
-go build, go run, go test 시 vendor 우선 사용
-
-필요하다면 위 절차를 자동화할 스크립트도 만들어드릴 수 있어요. 어떤 라이브러리(예: github.com/go-redis/redis/v8 등)를 포함할지 알려주시면 바로 압축본도 구성 도와드릴게요.
-
-
-
-# redis auth 설정 방법 
-레디스 접속
-config set requirepass mypass
-
-AUTH
-
-
-# 암호화 
-
-go run encrypt.go "mysecretpassword" "my-secret-key"

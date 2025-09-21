@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 
 # ✅ 리눅스용 바이너리로 빌드 (절대 필수) - 정적파일로 생성 필요 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-gateway cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-gateway cmd/gateway/main.go
 
 # 디버깅용 실행 이미지
 # FROM alpine:latest
@@ -30,6 +30,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-gateway cmd/server
 FROM gcr.io/distroless/static
 
 COPY --from=builder /app/service-gateway /service-gateway
-COPY config.yaml /config.yaml
+COPY ./configs/gateway.yaml /configs/gateway.yaml
 
 ENTRYPOINT ["/service-gateway"]

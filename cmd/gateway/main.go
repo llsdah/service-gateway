@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"service-gateway/internal/header"
 	"service-gateway/internal/httpx"
+	"service-gateway/internal/kafkax"
 	"service-gateway/internal/observability"
 	"service-gateway/internal/router"
 	httpadapter "service-gateway/internal/router/adapter/http"
@@ -25,13 +26,87 @@ import (
 	"service-gateway/internal/handlers"
 	"service-gateway/internal/store"
 	"service-gateway/internal/store/mariadb"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.opentelemetry.io/otel/trace/noop"
 )
+
+func initTracer(ctx context.Context, cfg config.Config) (func(context.Context) error, error) {
+
+	if !cfg.Tracing.Enabled {
+		// Tracing 비활성화 → noop tracer provider
+		otel.SetTracerProvider(noop.NewTracerProvider())
+		return func(context.Context) error { return nil }, nil
+	}
+
+	// OTLP exporter 구성
+	opts := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(cfg.Tracing.OTLP.Endpoint),
+	}
+
+	if cfg.Tracing.OTLP.Insecure {
+		opts = append(opts, otlptracegrpc.WithInsecure())
+	}
+
+	exporter, err := otlptracegrpc.New(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// ✅ gRPC 기반 OTLP exporter 생성
+	//exporter, err := otlptracegrpc.New(ctx,
+	//	otlptracegrpc.WithInsecure(),                          // TLS 없이 gRPC 통신
+	//	otlptracegrpc.WithEndpoint(cfg.Tracing.OTLP.Endpoint), // OTLP gRPC 포트 (기본값 4317)
+	//	otlptracegrpc.WithDialOption(grpc.WithBlock()),        // 연결 완료될 때까지 block
+	//)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// ✅ 리소스 (서비스 정보 등)
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceName(cfg.Application.Name),
+			attribute.String("env", "dev"),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// ✅ TracerProvider 구성
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+	otel.SetTracerProvider(tp)
+
+	return tp.Shutdown, nil
+
+}
 
 func main() {
 	// 1) 설정 로드
 	confPath := envOr("GATEWAY_CONFIG", "configs/gateway.yaml")
 
 	config.LoadConfig(confPath)
+
+	// 모니터링 연결
+	tp, err := initTracer(context.Background(), config.AppConfig)
+	if err != nil {
+		log.Fatalf("fail to initalize tracer : %v", err)
+	}
+	defer func() {
+		if err := tp(context.Background()); err != nil {
+			log.Printf("failed to shut down tracer provider: %v", err)
+		}
+	}()
 
 	// 2) 라우팅 테이블 구성
 	var routes []router.Route
@@ -72,17 +147,59 @@ func main() {
 
 	rproxy := &httpadapter.ReverseProxy{Client: client}
 
+	// Kafka Publisher 생성
+	kc := config.AppConfig.Kafka
+
+	if config.AppConfig.Application.Log.Topic == "" {
+		log.Fatal("application.log.topic is empty") // 미설정 조기 발견
+	}
+
+	pub, err := kafkax.NewPublisher(kafkax.Config{
+		Enabled:      kc.Enabled,
+		Brokers:      kc.Brokers,
+		ClientID:     kc.ClientID,
+		Topic:        config.AppConfig.Application.Log.Topic,
+		Acks:         kc.Acks,
+		Compression:  kc.Compression,
+		Timeout:      time.Duration(kc.TimeoutMs) * time.Millisecond,
+		BatchBytes:   kc.BatchBytes,
+		BatchTimeout: time.Duration(kc.BatchTimeoutMs) * time.Millisecond,
+		SASL: struct {
+			Enabled   bool
+			Mechanism string
+			Username  string
+			Password  string
+		}{kc.SASL.Enabled, kc.SASL.Mechanism, kc.SASL.Username, kc.SASL.Password},
+		TLS: struct {
+			Enabled            bool
+			InsecureSkipVerify bool
+		}{kc.TLS.Enabled, kc.TLS.InsecureSkipVerify},
+	})
+	if err != nil {
+		log.Fatalf("kafka init failed: %v", err)
+	}
+	defer pub.Close()
+
 	mux := http.NewServeMux()
 
 	// health
 	mux.Handle("/sid/gateway/hello", observability.Healthz())
 
-	// === 신규: /gateway 등록 ===
-	dyn := handlers.NewDynamicGateway(repo, ms(config.AppConfig.Server.ReadTOms))
+	// === 신규: /gateway 등록 === 핸들러 생성에 주입 (타임아웃은 기존 설정 사용) kafka 추가
+	dyn := handlers.NewDynamicGateway(repo, 5*time.Second, pub)
+
+	// /gateway 및 하위 경로 모두 처리
+	mux.HandleFunc("/gateway/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost && r.Method != http.MethodGet {
+			httpx.WriteJSON(w, http.StatusMethodNotAllowed, httpx.NewError("method not allowed", nil))
+			return
+		}
+		dyn.Post(w, r)
+	})
+	// /gateway 단일 경로도 동일하게 처리
 	mux.HandleFunc("/gateway", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost && r.Method != http.MethodGet {
-			httpx.WriteJSON(w, http.StatusMethodNotAllowed, httpx.NewError("method not allowed", err))
-
+			httpx.WriteJSON(w, http.StatusMethodNotAllowed, httpx.NewError("method not allowed", nil))
 			return
 		}
 		dyn.Post(w, r)

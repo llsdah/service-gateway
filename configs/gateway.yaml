@@ -1,12 +1,32 @@
 application:
-  group_code: "00006"
+  name: "service-gateway"
+  group_code: "006"
   log:
+    topic: "topic1"
     inbound:
       request: "log.source.in"
       response: "log.source.out"
     outbound:
       request: "log.target.in"
       response: "log.target.out"
+
+kafka:
+  enabled: true
+  brokers: ["localhost:9092"]
+  client_id: "service-gateway"
+  acks: "all"                 # none|leader|all
+  compression: "snappy"       # none|gzip|snappy|lz4|zstd
+  timeout_ms: 5000            # 개별 write 타임아웃
+  batch_bytes: 1048576        # 1MiB
+  batch_timeout_ms: 10
+  sasl:
+    enabled: false
+    mechanism: "SCRAM-SHA-256"
+    username: ""
+    password: ""
+  tls:
+    enabled: false
+    insecure_skip_verify: false
 
 server:
   addr: ":8092"
@@ -15,7 +35,7 @@ server:
   idle_timeout_ms: 60000
 
 db:
-  enabled: false   
+  enabled: true   
   driver: "mysql"        # "mysql" (MariaDB 드라이버)
   host: "127.0.0.1"
   port: 3306
@@ -26,7 +46,7 @@ db:
 
 hosts:
   session-service: localhost:8090
-  "00003": http://localhost:8090
+  "003": http://localhost:8090
   order-service: localhost:8092
   mock-host: localhost:8093
 
@@ -81,3 +101,11 @@ routes:
     options:
       require_session: true
       generate_if_missing: false
+
+tracing:
+  enabled: true
+  otlp:
+    endpoint: "127.0.0.1:4317"
+    insecure: true
+
+

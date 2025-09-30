@@ -3,7 +3,10 @@ package observability
 import (
 	"log"
 	"net/http"
+	config "service-gateway/internal/configs"
 	"time"
+
+	"go.opentelemetry.io/otel"
 )
 
 type loggingRW struct {
@@ -31,7 +34,11 @@ func (lrw *loggingRW) WriteHeader(code int) {
 // 기동확인
 func Healthz() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tracer := otel.Tracer(config.AppConfig.Application.Name)
+		_, span := tracer.Start(r.Context(), "GatewayHello")
+		defer span.End()
+
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
+		_, _ = w.Write([]byte("0"))
 	})
 }

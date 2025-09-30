@@ -10,15 +10,17 @@ import (
 
 type Config struct {
 	Application struct {
+		Name      string `yaml:"name"`
 		GroupCode string `yaml:"group_code"`
 		Log       struct {
+			Topic   string `yaml:"topic"`
 			Inbound struct {
-				Request string `yaml:"request"`
-				Reponse string `yaml:"response"`
+				Request  string `yaml:"request"`
+				Response string `yaml:"response"`
 			} `yaml:"inbound"`
 			Outbound struct {
-				Request string `yaml:"request"`
-				Reponse string `yaml:"response"`
+				Request  string `yaml:"request"`
+				Response string `yaml:"response"`
 			} `yaml:"outbound"`
 		} `yaml:"log"`
 	}
@@ -29,6 +31,9 @@ type Config struct {
 		WriteTOms int    `yaml:"write_timeout_ms"`
 		IdleTOms  int    `yaml:"idle_timeout_ms"`
 	} `yaml:"server"`
+
+	Kafka KafkaConfig `yaml:"kafka"`
+
 	// ★ 추가: gateway.yaml의 db 블록
 	DB struct {
 		Enabled  bool   `yaml:"enabled"`
@@ -60,6 +65,37 @@ type Config struct {
 			GenerateIfMissing bool `yaml:"generate_if_missing"`
 		} `yaml:"options"`
 	} `yaml:"routes"`
+
+	Tracing struct {
+		Enabled bool `yaml:"enabled"`
+		OTLP    struct {
+			Endpoint string `yaml:"endpoint"`
+			Insecure bool   `yaml:"insecure"`
+		}
+	} `yaml:"tracing"`
+}
+
+type KafkaSASL struct {
+	Enabled   bool   `yaml:"enabled"`
+	Mechanism string `yaml:"mechanism"` // "PLAIN"|"SCRAM-SHA-256"|"SCRAM-SHA-512"
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+}
+type KafkaTLS struct {
+	Enabled            bool `yaml:"enabled"`
+	InsecureSkipVerify bool `yaml:"insecure_skip_verify"`
+}
+type KafkaConfig struct {
+	Enabled        bool      `yaml:"enabled"`
+	Brokers        []string  `yaml:"brokers"`
+	ClientID       string    `yaml:"client_id"`
+	Acks           string    `yaml:"acks"`
+	Compression    string    `yaml:"compression"`
+	TimeoutMs      int       `yaml:"timeout_ms"`
+	BatchBytes     int64     `yaml:"batch_bytes"`
+	BatchTimeoutMs int       `yaml:"batch_timeout_ms"`
+	SASL           KafkaSASL `yaml:"sasl"`
+	TLS            KafkaTLS  `yaml:"tls"`
 }
 
 var (

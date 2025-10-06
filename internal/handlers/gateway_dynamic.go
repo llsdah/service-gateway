@@ -293,7 +293,7 @@ func (h *DynamicGateway) Post(w http.ResponseWriter, r *http.Request) {
 	outFw := header.Serialize(merged)
 	r.Header.Set("X-Fw-Header", outFw)
 	// 헤더 복사 (필요시 hop-by-hop 필터링 추가 가능)
-	copyHeaders(reqUp.Header, r.Header)
+	copySecureHeaders(reqUp.Header, r.Header)
 	if hasBody && reqUp.Header.Get("Content-Type") == "" {
 		reqUp.Header.Set("Content-Type", "application/json")
 	}
@@ -472,6 +472,25 @@ func copyHeaders(dst, src http.Header) {
 	for k, vv := range src {
 		for _, v := range vv {
 			dst.Add(k, v)
+		}
+	}
+}
+
+// 수정 제안 - 안전한 헤더만 전달
+func copySecureHeaders(dst, src http.Header) {
+	safeHeaders := map[string]bool{
+		"Content-Type":    true,
+		"User-Agent":      true,
+		"Accept":          true,
+		"X-Fw-Header":     true,
+		"X-Fw-Session-Id": true,
+	}
+
+	for k, vv := range src {
+		if safeHeaders[k] {
+			for _, v := range vv {
+				dst.Add(k, v)
+			}
 		}
 	}
 }

@@ -108,4 +108,15 @@ tracing:
     endpoint: "127.0.0.1:4317"
     insecure: true
 
+middleware:
+  circuitbreaker:
+    enabled: true
+    failureThreshold: 5
+    openTimeoutMs: 10000
+    halfOpenTimeoutMs: 5000
+  ratelimit:
+    enabled: true
+    rate: 100   # requests per second
+    burst: 10
+
 

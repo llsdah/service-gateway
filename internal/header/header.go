@@ -150,3 +150,29 @@ func BumpTCIDSRNO(raw string) string {
 		return prefix + newDigits
 	})
 }
+
+// EnsureTCIDForRequest
+// WHY: 미들웨어(FwHeaderTrace) 진입 시 단일 함수 호출로
+//  1. X-Fw-Header 파싱(K=V;…)
+//  2. 기존 TCID 보존(없으면 생성)
+//  3. TCIDSRNO 기본값 "0001" 보장
+//  4. BizSrvcCd / BizSrvcIp 서버 기준 값 채움
+//  5. 다시 직렬화
+func EnsureTCIDForRequest(raw string, bizCode, host string) string {
+	m := Parse(raw)
+	m = ApplyServerSideFieldsPreserveTCID(m, bizCode, host)
+	return Serialize(m)
+}
+
+// ApplyServerSideFieldsPreserveTCID
+// WHY: TCID를 보존하면서 서버 기준 필드 적용
+func ApplyServerSideFieldsPreserveTCID(in map[string]string, bizCode, host string) map[string]string {
+	if in == nil {
+		in = make(map[string]string)
+	}
+	in["TCID"] = generateTCID(host)
+	in["TCIDSRNO"] = "0001"
+	in["BizSrvcCd"] = bizCode
+	in["BizSrvcIp"] = hostIPFromHeader(host)
+	return in
+}

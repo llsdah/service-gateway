@@ -2,25 +2,23 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"service-gateway/internal/header"
+	"service-gateway/internal/gateway"
 	"service-gateway/internal/httpx"
 	"service-gateway/internal/kafkax"
+	"service-gateway/internal/middleware"
 	"service-gateway/internal/observability"
 	"service-gateway/internal/router"
 	httpadapter "service-gateway/internal/router/adapter/http"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/google/uuid"
 
 	config "service-gateway/internal/configs"
 	"service-gateway/internal/handlers"
@@ -188,7 +186,7 @@ func main() {
 	// === 신규: /gateway 등록 === 핸들러 생성에 주입 (타임아웃은 기존 설정 사용) kafka 추가
 	dyn := handlers.NewDynamicGateway(repo, 5*time.Second, pub)
 
-	// /gateway 및 하위 경로 모두 처리
+	// /gateway 및 하위 경로 모두 처리 (기존 동작 유지)
 	mux.HandleFunc("/gateway/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost && r.Method != http.MethodGet {
 			httpx.WriteJSON(w, http.StatusMethodNotAllowed, httpx.NewError("method not allowed", nil))
@@ -205,140 +203,132 @@ func main() {
 		dyn.Post(w, r)
 	})
 
-	// 루트: 라이팅 -> 프록시
+	// === 일반 라우팅: 경로/메서드 기반 리버스 프록시 ===
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-		// rt := table.Find(r); rt != nil 정확
-		// ✅ PathPattern/Prefix 기반 매칭 + PathVariable 추출
+		// 라우트 매칭 (PathPattern/Prefix + PathVariable)
 		rt, params := table.MatchRoute(r)
 		if rt == nil {
-			httpx.WriteJSON(w, http.StatusNotFound, httpx.NewError("not found url ", err))
-
+			httpx.WriteJSON(w, http.StatusNotFound, httpx.NewError("route not found", nil))
 			return
 		}
 
 		ctx := r.Context()
 
-		// 업스트림 메서드 결정: 기본은 클라이언트 메서드, 백엔드가 명시하면 강제
+		// 업스트림 메서드: 라우트에 명시되면 강제, 아니면 클라이언트 메서드 유지
 		upMethod := r.Method
 		if m := strings.TrimSpace(rt.Backend.Method); m != "" {
 			upMethod = strings.ToUpper(m)
 		}
 
-		// ✅ PathVariable 치환된 업스트림 경로
+		// PathVariable 반영된 업스트림 경로
 		upPath := httpadapter.BuildUpstreamPath(rt, r.URL.Path, params)
 
-		// ✅ FW Header 생성 (Host 기반)
-		// 1) 클라이언트가 보낸 X-Fw-Header 파싱
-		inFwRaw := r.Header.Get("X-Fw-Header")
-		inFw := header.Parse(inFwRaw)
-
-		/**
-		// 2) 여기서 체크: idempotency-key / fw_AUTHORIZATION 은 오직 X-Fw-Header에서만
-		idemKey := inFw["IdempotencyKey"]
-		fwAuth := inFw["fw_AUTHORIZATION"]
-
-		// (예시) idempotency-key 있으면 중복거래 체크
-		if idemKey != "" {
-			exists, err := repo.ExistsIdempotency(ctx, idemKey) // 구현체는 저장소에 맞게
-			if err != nil {
-				http.Error(w, "idempotency check error", http.StatusInternalServerError)
-				return
-			}
-			if exists {
-				http.Error(w, "duplicate request", http.StatusConflict)
-				return
-			}
-			// 최초 요청이면 마킹 (TTL 권장)
-			_ = repo.MarkIdempotency(ctx, idemKey, time.Minute*10)
+		// 업스트림 전체 URL (쿼리스트링 유지)
+		upstreamURL := rt.Backend.Scheme + "://" + rt.Backend.Host + upPath
+		if q := r.URL.RawQuery; q != "" {
+			upstreamURL += "?" + q
 		}
 
-		// (예시) fw_AUTHORIZATION 있으면 인증 모듈 연동
-		if fwAuth != "" {
-			ok, err := enc.Verify(fwAuth) // ENC 모듈과 연동하는 함수라고 가정
-			if err != nil || !ok {
-				http.Error(w, "authorization failed", http.StatusUnauthorized)
-				return
-			}
-		}
-		*/
-
-		// 3) 서버 강제 필드 덮어쓰기 (TCID 등) + BizSrvcCd는 설정값 사용
-		bizCode := "SAMPLE" // or config.AppConfig.BizServiceCode
-		merged := header.ApplyServerSideFields(inFw, bizCode, r.Host)
-
-		// 4) 다시 문자열로 직렬화하여 업스트림에 전달
-		outFw := header.Serialize(merged)
-		r.Header.Set("X-Fw-Header", outFw)
-
-		// 2) Merge/construct JSON body with jsessionid
-		var in map[string]any
-		if r.Body != nil {
-			bodyBytes, _ := io.ReadAll(r.Body)
-			_ = r.Body.Close()
-			if len(bodyBytes) > 0 {
-				_ = json.Unmarshal(bodyBytes, &in)
-			}
-		}
-		if in == nil {
-			in = map[string]any{}
-		}
-
-		// request transform based on route options: jsessionid handling + body injection
-		// 1) Resolve jsessionid from header
-
-		// 0) 특별 규칙: 라우트 이름이 "save-user"일 때 X-Fw-Session-Id 검사 및 body.key 주입
-		if rt.Name == "save-user" {
-			for k, v := range r.Header {
-				log.Printf("Header: %s=%s", k, v)
-			}
-
-			sessionId := r.Header.Get("X-Fw-Session-Id")
-
-			if sessionId == "" {
-				sessionId = uuid.NewString()
-				log.Println("세션 아이디 생성")
-			}
-
-			in["key"] = sessionId
-		}
-		payload, _ := json.Marshal(in)
-
-		// 3) Replace request to upstream as POST with rewritten path
-		// 업스트림 POST 요청으로 교체
-		upstreamURL := rt.Backend.Scheme + "://" + rt.Backend.Host + rt.Backend.PathRewrite
-		reqUp, err := http.NewRequestWithContext(ctx, http.MethodPost, upstreamURL, io.NopCloser(strings.NewReader(string(payload))))
+		// 원본 바디를 그대로 전달하는 업스트림 요청 생성
+		reqUp, err := http.NewRequestWithContext(ctx, upMethod, upstreamURL, r.Body)
 		if err != nil {
-			httpx.WriteJSON(w, http.StatusInternalServerError, httpx.NewError("not found url ", err))
-
+			httpx.WriteJSON(w, http.StatusInternalServerError, httpx.NewError("build upstream request failed", err))
 			return
 		}
-		reqUp.Header.Set("Content-Type", "application/json")
-		// forward a few headers if needed
-		// 필요 시 일부 헤더 전달 (User-Agent 등). 단, X-Fw-Session-Id는 아예 제거
+		// 안전한 헤더 전달 (Hop-by-Hop 제거)
+		copyProxyHeaders(reqUp.Header, r.Header)
 
-		if ua := r.Header.Get("User-Agent"); ua != "" {
-			reqUp.Header.Set("User-Agent", ua)
-		}
-
-		if ua := r.Header.Get("X-Fw-Session-Id"); ua != "" {
-			reqUp.Header.Set("X-Fw-Session-Id", ua)
-		}
-
-		if ua := r.Header.Get("X-Fw-Header"); ua != "" {
-			reqUp.Header.Set("X-Fw-Header", ua)
-		}
-
-		// hand off to proxy: use reqUp in place of original r
-		r = reqUp
-
-		rproxy.Proxy(ctx, w, r, rt.Name, rt.Backend.Scheme, rt.Backend.Host, upPath, upMethod, params)
-
+		// 프록시 처리
+		rproxy.Proxy(ctx, w, reqUp, rt.Name, rt.Backend.Scheme, rt.Backend.Host, upPath, upMethod, params)
 	})
 
-	handler := observability.Logging(mux)
+	// YAML 기반 라우팅 폴백 핸들러
+	yamlFallback := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rt, params := table.MatchRoute(r)
+		if rt == nil {
+			httpx.WriteJSON(w, http.StatusNotFound, httpx.NewError("route not found", nil))
+			return
+		}
+		ctx := r.Context()
+		upMethod := r.Method
+		if m := strings.TrimSpace(rt.Backend.Method); m != "" {
+			upMethod = strings.ToUpper(m)
+		}
+		upPath := httpadapter.BuildUpstreamPath(rt, r.URL.Path, params)
+		upstreamURL := rt.Backend.Scheme + "://" + rt.Backend.Host + upPath
+		if q := r.URL.RawQuery; q != "" {
+			upstreamURL += "?" + q
+		}
+		reqUp, err := http.NewRequestWithContext(ctx, upMethod, upstreamURL, r.Body)
+		if err != nil {
+			httpx.WriteJSON(w, http.StatusInternalServerError, httpx.NewError("build upstream request failed", err))
+			return
+		}
+		copyProxyHeaders(reqUp.Header, r.Header)
+		rproxy.Proxy(ctx, w, reqUp, rt.Name, rt.Backend.Scheme, rt.Backend.Host, upPath, upMethod, params)
+	})
 
-	// 4) 서버 부팅 + Graceful shutdown
+	// FastAPI 스타일 코드 기반 라우팅
+	gw := gateway.New(rproxy)
+
+	// 예시: 타입/검증 포함 라우트
+	type CreateUser struct {
+		Name  string `json:"name" validate:"required,min=2"`
+		Email string `json:"email" validate:"required,email"`
+		Age   int    `json:"age" validate:"gte=0,lte=120"`
+	}
+
+	gw.POST("/api/v1/users", gateway.Upstream{
+		Scheme:      "http",
+		Host:        "user-service:8080",
+		PathRewrite: "/api/v1/users",
+	}, gateway.WithJSONValidation(gateway.JSONValidator[CreateUser]()))
+
+	// 경로 변수 타입 포함
+	gw.GET("/api/v1/users/{id:int}", gateway.Upstream{
+		Scheme:      "http",
+		Host:        "user-service:8080",
+		PathRewrite: "/api/v1/users/{id}",
+	})
+
+	// 비동기 ACK(202) 후 백그라운드로 프록시
+	gw.POST("/api/v1/orders", gateway.Upstream{
+		Scheme:      "http",
+		Host:        "order-service:8080",
+		PathRewrite: "/api/v1/orders",
+	}, gateway.WithAsyncAck())
+
+	// "/"에 등록: 코드 라우팅 → 미스매치 시 YAML 폴백
+	mux.Handle("/", gw.Handler(yamlFallback))
+
+	var handler http.Handler = mux
+
+	// 왜: 본문 과다 방어(엣지 미설정 대비 이중 방어)
+	maxBody := int64(10 << 20)
+	if v := os.Getenv("GATEWAY_MAX_BODY_BYTES"); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
+			maxBody = n
+		}
+	}
+	handler = middleware.BodyLimit(handler, maxBody)
+
+	// 왜: 원 클라이언트 컨텍스트(X-Forwarded-*) 보강(추적 ID와 목적이 다름)
+	handler = middleware.ProxyHeaders(handler)
+
+	// 왜: 상관관계 ID는 X-Fw-Header의 TCID로 통일. X-Request-Id는 생성/전파하지 않음.
+	bizCode := os.Getenv("FW_BIZ_CODE")
+	if bizCode == "" {
+		bizCode = "service-gateway"
+	}
+	handler = middleware.FwHeaderTrace(bizCode, handler)
+
+	// ...필요 시 JWT/RateLimit/CircuitBreaker 추가...
+	// handler = middleware.JWTAuth(handler)
+	// rl := middleware.NewRateLimiterFromEnv(); handler = rl.Middleware(handler)
+	// cb := middleware.NewCircuitBreaker(5, 10*time.Second, 5*time.Second); handler = cb.Middleware(handler)
+
+	handler = observability.Logging(handler)
+
 	srv := &http.Server{
 		Addr:         config.AppConfig.Server.Addr,
 		Handler:      handler,
@@ -405,5 +395,23 @@ func buildRepoFromConfig() (store.Repository, error) {
 		})
 	default:
 		return nil, fmt.Errorf("unsupported DB_DRIVER: %s", driver)
+	}
+}
+
+// 파일 하단에 유틸 추가
+func copyProxyHeaders(dst, src http.Header) {
+	// Hop-by-Hop 헤더 제거
+	hop := map[string]struct{}{
+		"Connection": {}, "Proxy-Connection": {}, "Keep-Alive": {},
+		"Proxy-Authenticate": {}, "Proxy-Authorization": {}, "Te": {},
+		"Trailer": {}, "Transfer-Encoding": {}, "Upgrade": {},
+	}
+	for k, vv := range src {
+		if _, bad := hop[http.CanonicalHeaderKey(k)]; bad {
+			continue
+		}
+		for _, v := range vv {
+			dst.Add(k, v)
+		}
 	}
 }
